@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import pdf from 'pdf-parse';
+import * as pdfParse from 'pdf-parse';
 
 const TEXT_EXTENSIONS = ['.txt', '.md', '.csv', '.html', '.json', '.tsv'];
 
@@ -24,6 +24,8 @@ export async function POST(request: Request) {
 
       if (ext === '.pdf') {
         const buffer = Buffer.from(await file.arrayBuffer());
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pdf = ((pdfParse as any).default || pdfParse) as any;
         const data = await pdf(buffer);
         results.push({ name: file.name, text: data.text });
       } else if (TEXT_EXTENSIONS.includes(ext)) {
