@@ -47,6 +47,8 @@ export default function PreviewPage() {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
+  // printHtml: 전체 페이지를 합친 인쇄용 HTML (window.print PDF용)
+  const printHtmlRef = useRef<string>('');
 
   useEffect(() => {
     if (!ready) return;
@@ -109,6 +111,30 @@ ${el.outerHTML}
       });
 
       setPageBlobUrls(urls);
+
+      // 인쇄용 전체 HTML 조립 (window.print → PDF 저장)
+      const allPagesHtml = Array.from(pageElements).map((el) => el.outerHTML).join('\n');
+      printHtmlRef.current = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>AX Report - ${fields!.companyName || 'report'}</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:0;background:#fff}
+${style}
+@page{size:A4;margin:0}
+.page{width:794px;max-width:794px;margin:0;padding:0;border-radius:0!important;box-shadow:none!important;page-break-after:always;page-break-inside:avoid;overflow:hidden}
+.page:last-child{page-break-after:auto}
+.cover{min-height:auto}.ending{min-height:auto}
+</style>
+</head>
+<body>
+${allPagesHtml}
+<script>${chartJsCode}</script>
+<script>${chartInitCode}</script>
+</body>
+</html>`;
     }
 
     loadTemplate();
@@ -147,28 +173,32 @@ ${el.outerHTML}
     return () => window.removeEventListener('keydown', onKey);
   }, [currentPage, goTo]);
 
-  // Puppeteer 서버 라우트로 PDF 생성
-  const downloadPdf = async () => {
-    if (!fields) return;
+  // 브라우저 인쇄 → PDF 저장 (Vercel serverless에서 Chromium 사용 불가하므로 클라이언트 방식)
+  const downloadPdf = () => {
+    if (!fields || !printHtmlRef.current) return;
     setPdfLoading(true);
-    try {
-      const res = await fetch('/api/report/pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fields }),
-      });
-      if (!res.ok) throw new Error('PDF 생성 실패');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `AX_Report_${fields.companyName || 'report'}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      alert('PDF 생성 중 오류가 발생했습니다.');
-    } finally {
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('팝업이 차단됐습니다. 주소창 오른쪽의 팝업 허용 버튼을 클릭한 후 다시 시도해주세요.');
       setPdfLoading(false);
+      return;
+    }
+
+    printWindow.document.write(printHtmlRef.current);
+    printWindow.document.close();
+
+    const doPrint = () => {
+      printWindow.focus();
+      printWindow.print();
+      setPdfLoading(false);
+    };
+
+    // Chart.js 렌더링 + 폰트/이미지 로드 완료 후 인쇄
+    if (printWindow.document.readyState === 'complete') {
+      setTimeout(doPrint, 800);
+    } else {
+      printWindow.onload = () => setTimeout(doPrint, 800);
     }
   };
 
