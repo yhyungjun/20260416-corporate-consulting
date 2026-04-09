@@ -52,6 +52,19 @@ export async function POST(request: Request) {
       }
     });
 
+    // Chart.js 스크립트를 인라인으로 삽입 (CDN/네트워크 의존성 제거)
+    renderedHtml = renderedHtml.replace(
+      /<script src="\/chart\.umd\.js"><\/script>/,
+      () => {
+        try {
+          const chartJs = readFileSync(join(publicDir, 'chart.umd.js'), 'utf-8');
+          return `<script>${chartJs}</script>`;
+        } catch {
+          return '<script src="/chart.umd.js"></script>';
+        }
+      }
+    );
+
     // PDF 인쇄용 CSS 주입: 각 .page를 A4에 맞춤
     const printCss = `
       <style>
@@ -79,11 +92,36 @@ export async function POST(request: Request) {
     browser = await launchBrowser();
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123 });
+
+    // 'load'로 대기: 인라인 스크립트(Chart.js + 차트 초기화)까지 실행 완료 보장
     await page.setContent(pdfHtml, {
-      waitUntil: 'domcontentloaded',
+      waitUntil: 'load',
       timeout: 30000,
     });
     await page.evaluateHandle('document.fonts.ready');
+
+    // Chart.js 인스턴스 생성 완료까지 대기
+    await page.waitForFunction(
+      () => typeof (window as unknown as { Chart?: unknown }).Chart !== 'undefined',
+      { timeout: 10000 }
+    );
+
+    // canvas 렌더링 완료 여유 시간
+    await new Promise((r) => setTimeout(r, 400));
+
+    // canvas → PNG data URI → img 교체 (PDF에서 canvas가 빈 경우 방지)
+    await page.evaluate(() => {
+      document.querySelectorAll<HTMLCanvasElement>('canvas').forEach((canvas) => {
+        const dataUri = canvas.toDataURL('image/png');
+        const img = document.createElement('img');
+        img.src = dataUri;
+        const style = canvas.getAttribute('style');
+        if (style) img.setAttribute('style', style);
+        img.setAttribute('width', String(canvas.width));
+        img.setAttribute('height', String(canvas.height));
+        canvas.parentNode?.replaceChild(img, canvas);
+      });
+    });
 
     // 넘치는 페이지 자동 축소: 콘텐츠가 A4보다 크면 scale down
     await page.evaluate(() => {

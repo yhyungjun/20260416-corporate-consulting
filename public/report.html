@@ -471,7 +471,7 @@ tr:hover td{background:#fafafa}
 </div>
 
 <!-- ==================== CHARTS ==================== -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="/chart.umd.js"></script>
 <script>
 var rc=document.getElementById('radarChart');
 if(rc){new Chart(rc,{type:'radar',data:{labels:['AI 전략 & 리더십','데이터 인프라','업무 프로세스\nAI 적용도','인재 & 조직 역량','기술 환경 & 도구'],datasets:[{label:'현재',data:[2.3,1.7,2.7,2.0,3.3],backgroundColor:'rgba(124,58,237,.15)',borderColor:'#7C3AED',pointBackgroundColor:'#7C3AED',borderWidth:2,pointRadius:4}]},options:{responsive:false,scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:10},backdropColor:'transparent'},pointLabels:{font:{size:11,family:'Noto Sans KR'}},grid:{color:'rgba(0,0,0,.06)'}}},plugins:{legend:{display:false}}}})}
