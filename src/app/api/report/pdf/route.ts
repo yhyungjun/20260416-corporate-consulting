@@ -1,10 +1,33 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import puppeteer from 'puppeteer';
 import { renderReport } from '@/lib/template-engine';
 import type { ReportFields } from '@/lib/report-schema';
 
 export const maxDuration = 60;
+
+// 환경에 따라 Chrome 실행 경로 결정
+async function launchBrowser() {
+  if (process.env.VERCEL) {
+    // 서버리스 환경: 경량화된 chromium 사용
+    const chromium = await import('@sparticuz/chromium-min');
+    const puppeteer = await import('puppeteer-core');
+    const executablePath = await chromium.default.executablePath(
+      'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar'
+    );
+    return puppeteer.default.launch({
+      args: chromium.default.args,
+      executablePath,
+      headless: true,
+    });
+  } else {
+    // 로컬 개발 환경: 설치된 puppeteer의 Chrome 사용
+    const puppeteer = await import('puppeteer');
+    return puppeteer.default.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+  }
+}
 
 export async function POST(request: Request) {
   let browser;
@@ -55,10 +78,7 @@ export async function POST(request: Request) {
     `;
     const pdfHtml = renderedHtml.replace('</head>', `${printCss}</head>`);
 
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+    browser = await launchBrowser();
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123 });
     await page.setContent(pdfHtml, {

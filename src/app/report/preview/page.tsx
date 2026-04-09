@@ -88,16 +88,27 @@ export default function PreviewPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fields }),
       });
-      if (!res.ok) throw new Error('PDF 생성 실패');
+      if (!res.ok) {
+        let detail = '';
+        try {
+          const errBody = await res.json();
+          detail = errBody.detail || errBody.error || '';
+        } catch {}
+        throw new Error(detail || `PDF 생성 실패 (${res.status})`);
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `AX_Report_${fields.companyName || 'report'}.pdf`;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      alert('PDF 다운로드에 실패했습니다. 다시 시도해주세요.');
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error('PDF download error:', err);
+      const msg = err instanceof Error ? err.message : '';
+      alert(`PDF 다운로드에 실패했습니다. ${msg ? `(${msg})` : '다시 시도해주세요.'}`);
     } finally {
       setPdfLoading(false);
     }
