@@ -63,6 +63,7 @@ export default function ReportInputPage() {
   const router = useRouter();
   const { meetingNotes, setMeetingNotes, setFields, setMetadata } = useReport();
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState('');
   const [error, setError] = useState('');
 
   // 노트 파일 상태
@@ -227,6 +228,7 @@ export default function ReportInputPage() {
   const handleSubmit = async () => {
     if (!meetingNotes.trim() && !surveyInfo) return;
     setLoading(true);
+    setProgress('');
     setError('');
     try {
       let combined = meetingNotes.trim();
@@ -255,17 +257,43 @@ export default function ReportInputPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ meetingNotes: combined, surveyFields }),
       });
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error('서버 응답 파싱 실패. 서버가 정상 실행 중인지 확인해주세요.');
+
+      if (!res.body) throw new Error('서버 응답이 없습니다.');
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let finalResult: { fields: unknown; metadata: unknown } | null = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line);
+            if (event.type === 'progress') {
+              setProgress(event.message);
+            } else if (event.type === 'result') {
+              finalResult = event.data;
+            } else if (event.type === 'error') {
+              throw new Error(event.message);
+            }
+          } catch (parseErr) {
+            if (parseErr instanceof SyntaxError) continue;
+            throw parseErr;
+          }
+        }
       }
-      if (!res.ok) {
-        throw new Error(data.error || '분석 실패');
-      }
-      const { fields, metadata } = data;
+
+      if (!finalResult) throw new Error('서버 응답에 결과가 없습니다.');
+
+      const { fields, metadata } = finalResult as { fields: Parameters<typeof setFields>[0]; metadata: Parameters<typeof setMetadata>[0] };
       setFields(fields);
       setMetadata(metadata);
       router.push('/report/review');
@@ -513,7 +541,7 @@ export default function ReportInputPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                AI 분석 중...
+                {progress || 'AI 분석 중...'}
               </>
             ) : (
               '리포트 생성'

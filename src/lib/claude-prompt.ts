@@ -282,27 +282,11 @@ const EXTRACT_TOOL: Anthropic.Tool = {
   },
 };
 
-export async function analyzeMeetingNotes(
-  notes: string
-): Promise<{ fields: ReportFields; metadata: ExtractMetadata }> {
-  const client = new Anthropic({
-    apiKey: getApiKey(),
-  });
+// ── 후처리: tool_use 응답 → ReportFields + metadata ──
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 8192,
-    system: SYSTEM_PROMPT,
-    tools: [EXTRACT_TOOL],
-    tool_choice: { type: 'tool', name: 'extract_report_data' },
-    messages: [
-      {
-        role: 'user',
-        content: `다음 미팅 노트에서 AX 기업 진단 리포트에 필요한 데이터를 추출해주세요. 기본 정보뿐 아니라, 부서별 Pain Point, 내부 역량 진단, SWOT 교차 전략, Gap 분석, 혁신 과제, 세부 추진 계획, 간트 차트 일정까지 모두 생성해주세요:\n\n${notes}`,
-      },
-    ],
-  });
-
+function processToolResponse(
+  response: Anthropic.Message,
+): { fields: ReportFields; metadata: ExtractMetadata } {
   const toolBlock = response.content.find((b) => b.type === 'tool_use');
   if (!toolBlock || toolBlock.type !== 'tool_use') {
     throw new Error('Claude API did not return tool_use response');
@@ -346,29 +330,26 @@ export async function analyzeMeetingNotes(
     milestones: (raw.milestones as ReportFields['milestones']) ?? null,
   };
 
-  // diagnosisDate 연도 보정: 연도 누락 또는 현재 연도와 동떨어진 경우 현재 연도 적용
+  // diagnosisDate 연도 보정
   if (fields.diagnosisDate) {
     const currentYear = new Date().getFullYear();
     const dateMatch = fields.diagnosisDate.match(/^(\d{4})\.(\d{2})\.(\d{2})$/);
     if (dateMatch) {
       const extractedYear = parseInt(dateMatch[1], 10);
-      // 현재 연도와 1년 이상 차이나면 현재 연도로 보정
       if (Math.abs(extractedYear - currentYear) > 1) {
         fields.diagnosisDate = `${currentYear}.${dateMatch[2]}.${dateMatch[3]}`;
       }
     } else {
-      // MM.DD 또는 M월 D일 형식만 추출된 경우 현재 연도 붙이기
       const shortMatch = fields.diagnosisDate.match(/^(\d{1,2})\.(\d{1,2})$/);
       if (shortMatch) {
         fields.diagnosisDate = `${currentYear}.${shortMatch[1].padStart(2, '0')}.${shortMatch[2].padStart(2, '0')}`;
       }
     }
   } else {
-    // diagnosisDate가 null이면 오늘 날짜로 기본 설정
     fields.diagnosisDate = getTodayString();
   }
 
-  // 기본값 보정: null인 필드에 config의 defaultValue 적용
+  // 기본값 보정
   for (const cfg of EXTRACTION_CONFIG) {
     const key = cfg.key as keyof ReportFields;
     if (fields[key] == null && cfg.defaultValue !== undefined) {
@@ -394,4 +375,61 @@ export async function analyzeMeetingNotes(
       validationErrors: validationErrors.map((e: ValidationError) => ({ field: e.field, message: e.message })),
     },
   };
+}
+
+const USER_MESSAGE = '다음 미팅 노트에서 AX 기업 진단 리포트에 필요한 데이터를 추출해주세요. 기본 정보뿐 아니라, 부서별 Pain Point, 내부 역량 진단, SWOT 교차 전략, Gap 분석, 혁신 과제, 세부 추진 계획, 간트 차트 일정까지 모두 생성해주세요:\n\n';
+
+const MODEL_PARAMS = {
+  model: 'claude-sonnet-4-20250514' as const,
+  max_tokens: 8192,
+  system: SYSTEM_PROMPT,
+  tools: [EXTRACT_TOOL],
+  tool_choice: { type: 'tool' as const, name: 'extract_report_data' },
+};
+
+export async function analyzeMeetingNotes(
+  notes: string
+): Promise<{ fields: ReportFields; metadata: ExtractMetadata }> {
+  const client = new Anthropic({ apiKey: getApiKey() });
+
+  const response = await client.messages.create({
+    ...MODEL_PARAMS,
+    messages: [{ role: 'user', content: USER_MESSAGE + notes }],
+  });
+
+  return processToolResponse(response);
+}
+
+export async function analyzeMeetingNotesStream(
+  notes: string,
+  onProgress: (message: string) => void,
+): Promise<{ fields: ReportFields; metadata: ExtractMetadata }> {
+  const client = new Anthropic({ apiKey: getApiKey() });
+
+  onProgress('Claude API 연결 중...');
+
+  const stream = client.messages.stream({
+    ...MODEL_PARAMS,
+    messages: [{ role: 'user', content: USER_MESSAGE + notes }],
+  });
+
+  const estimatedTotal = 8000;
+  let lastProgressTime = Date.now();
+  let accumulatedLength = 0;
+
+  stream.on('inputJson', (_partialJson: string, snapshot: unknown) => {
+    const now = Date.now();
+    if (now - lastProgressTime >= 5000) {
+      accumulatedLength = typeof snapshot === 'string' ? snapshot.length : JSON.stringify(snapshot).length;
+      const pct = Math.min(95, Math.round(accumulatedLength / estimatedTotal * 100));
+      onProgress(`데이터 추출 중... (${pct}%)`);
+      lastProgressTime = now;
+    }
+  });
+
+  const finalMessage = await stream.finalMessage();
+
+  onProgress('후처리 중...');
+
+  return processToolResponse(finalMessage);
 }
