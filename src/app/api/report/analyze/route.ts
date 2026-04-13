@@ -11,26 +11,30 @@ function writeLine(controller: ReadableStreamDefaultController, obj: object) {
 }
 
 /**
- * 라벨에서 추출한 메타데이터를 fields에 덮어쓰기 (in-place).
- * 우선순위: 메타데이터 > surveyFields > Claude 추출값
+ * 미팅노트에서 추출한 메타데이터를 fields에 적용 (in-place).
+ * CSV 설문이 이미 채운 필드는 건드리지 않음 — CSV가 정량 확정값, 미팅노트는 보조.
+ * 우선순위: CSV 설문 > 정규식/Haiku 메타 > Claude 추출값
  */
 function applyMetadataToFields(fields: ReportFields, meta: ExtractedMeta): void {
-  if (meta.companyName) fields.companyName = meta.companyName;
-  if (meta.consultantName) fields.consultantName = meta.consultantName;
-  if (meta.diagnosisDate) {
+  if (meta.companyName && !fields.companyName) fields.companyName = meta.companyName;
+  if (meta.consultantName && !fields.consultantName) fields.consultantName = meta.consultantName;
+  if (meta.diagnosisDate && !fields.diagnosisDate) {
     fields.diagnosisDate = meta.diagnosisDate;
-    // interviewInfo.date도 동일하게 업데이트
-    if (!fields.interviewInfo) {
-      fields.interviewInfo = { participants: '', date: meta.diagnosisDate };
-    } else {
-      fields.interviewInfo.date = meta.diagnosisDate;
-    }
   }
-  if (meta.participants) {
+  // interviewInfo: CSV가 이미 채운 하위 필드는 보존
+  if (meta.diagnosisDate || meta.participants) {
     if (!fields.interviewInfo) {
-      fields.interviewInfo = { participants: meta.participants, date: '' };
+      fields.interviewInfo = {
+        participants: meta.participants || '',
+        date: meta.diagnosisDate || '',
+      };
     } else {
-      fields.interviewInfo.participants = meta.participants;
+      if (meta.diagnosisDate && !fields.interviewInfo.date) {
+        fields.interviewInfo.date = meta.diagnosisDate;
+      }
+      if (meta.participants && !fields.interviewInfo.participants) {
+        fields.interviewInfo.participants = meta.participants;
+      }
     }
   }
 }
