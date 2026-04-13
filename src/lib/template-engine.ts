@@ -17,9 +17,7 @@ export function renderReport(htmlTemplate: string, fields: ReportFields): string
   let html = htmlTemplate;
 
   const replace = (pattern: string, value: string | null | undefined) => {
-    if (value != null) {
-      html = html.replaceAll(pattern, value);
-    }
+    html = html.replaceAll(pattern, value ?? 'ㅡ');
   };
 
   // ── 인터뷰 정보 (diagnosisDate 전역 치환보다 먼저) ──
@@ -47,7 +45,7 @@ export function renderReport(htmlTemplate: string, fields: ReportFields): string
   replace('{예: 제조업 / IT서비스 / 유통}', fields.industry);
   replace('{핵심 사업 서술}', fields.businessDesc);
   replace('{B2B / B2C / B2G}', fields.customerType);
-  replace('{10억 미만 / 10~50억 / 50~100억 / 100억 이상}', fields.revenue);
+  replace('{10억 미만 / 10~50억 / 50~100억 / 100억 이상}', fields.revenue || '비공개');
 
   // 임직원 수
   if (fields.employees) {
@@ -57,14 +55,22 @@ export function renderReport(htmlTemplate: string, fields: ReportFields): string
       `${e.total}명 (정규직 ${e.regular} / 비정규직 ${e.contract})`
     );
     html = html.replace('{기업명} 전 부서 · 전 직원',
-      `${fields.companyName || ''} 전 부서 · 전 직원`);
+      `${fields.companyName || 'ㅡ'} 전 부서 · 전 직원`);
     // P9 전환 대상 (총 {N}명)
     html = html.replace(/\(총 \{N\}명\)/, `(총 ${e.total}명)`);
+  } else {
+    html = html.replace(
+      /\{N\}명 \(정규직 \{N\} \/ 비정규직 \{N\}\)/,
+      'ㅡ명 (정규직 ㅡ / 비정규직 ㅡ)'
+    );
+    html = html.replace(/\(총 \{N\}명\)/, '(총 ㅡ명)');
   }
 
   // AI 도입 단계
   if (fields.aiStage != null) {
     replace('{N}단계', `${fields.aiStage}단계`);
+  } else {
+    replace('{N}단계', 'ㅡ단계');
     for (let i = 1; i <= 5; i++) {
       if (i === fields.aiStage) {
         html = html.replace(
@@ -87,11 +93,15 @@ export function renderReport(htmlTemplate: string, fields: ReportFields): string
   if (fields.aiBudget) {
     replace('{금액 또는 없음}', fields.aiBudget.toolSubscription);
     replace('{금액 또는 없음}', fields.aiBudget.educationBudget);
+  } else {
+    replace('{금액 또는 없음}', 'ㅡ');
   }
 
   // AI 전담 인력
   if (fields.aiSpecialists != null) {
     replace('{N명 또는 없음}', `${fields.aiSpecialists}명`);
+  } else {
+    replace('{N명 또는 없음}', 'ㅡ');
   }
 
   // ── 5개 영역 점수 + 등급 + Chart.js ──
