@@ -66,8 +66,9 @@ export async function listReports(): Promise<SavedReport[]> {
 }
 
 export async function getReport(id: string): Promise<SavedReport> {
-  const row = await apphubFetch<RawRow>(rowUrl(id));
-  return parseRow(row);
+  const data = await apphubFetch<{ rows: RawRow[] }>(`${TABLE_URL}&filter=id:${id}`);
+  if (!data.rows.length) throw new Error('리포트를 찾을 수 없습니다.');
+  return parseRow(data.rows[0]);
 }
 
 export async function createReport(input: {

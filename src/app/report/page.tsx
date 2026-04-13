@@ -342,8 +342,13 @@ export default function ReportInputPage() {
 
       // DB에 자동 저장
       try {
+        let baseTitle = `${fields.companyName || '미정'} - ${fields.diagnosisDate || new Date().toISOString().slice(0, 10)}`;
+        // 동일 이름 중복 처리
+        const existing = savedReports.filter((r) => r.title === baseTitle || r.title.startsWith(`${baseTitle}(`));
+        if (existing.length > 0) baseTitle = `${baseTitle}(${existing.length + 1})`;
+
         const saveBody = {
-          title: `${fields.companyName || '미정'} - ${fields.diagnosisDate || new Date().toISOString().slice(0, 10)}`,
+          title: baseTitle,
           company_name: fields.companyName || null,
           meeting_notes: combined,
           fields,
@@ -426,18 +431,22 @@ export default function ReportInputPage() {
         {!reportsLoading && savedReports.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <label className="text-sm font-semibold text-gray-700 mb-3 block">이전 리포트</label>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="space-y-2">
               {savedReports.map((r) => (
                 <button
                   key={r.id}
                   onClick={() => handleLoadReport(r.id)}
                   disabled={loading}
-                  className="w-full text-left p-3 bg-gray-50 border border-gray-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-colors"
+                  className="w-full text-left p-4 rounded-lg border-2 border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50/30 transition-all"
                 >
-                  <div className="text-sm font-medium text-gray-900">{r.title}</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {r.company_name && `${r.company_name} · `}
-                    {new Date(r.created_at).toLocaleDateString('ko-KR')}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-gray-900 text-sm">{r.title}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
+                    {r.company_name && (
+                      <span>기업명: <span className="text-gray-700">{r.company_name}</span></span>
+                    )}
+                    <span>생성일: <span className="text-gray-700">{new Date(r.created_at).toLocaleDateString('ko-KR')}</span></span>
                   </div>
                 </button>
               ))}
