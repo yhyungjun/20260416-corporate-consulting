@@ -61,7 +61,7 @@ interface SurveyInfo {
 
 export default function ReportInputPage() {
   const router = useRouter();
-  const { meetingNotes, setMeetingNotes, setFields, setMetadata, reportId, setReportId, reportTitle, setReportTitle } = useReport();
+  const { meetingNotes, setMeetingNotes, setFields, setMetadata, reportId, setReportId } = useReport();
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState('');
   const [error, setError] = useState('');
@@ -109,7 +109,6 @@ export default function ReportInputPage() {
       if (!res.ok) throw new Error('리포트를 불러올 수 없습니다.');
       const { report } = await res.json();
       setReportId(report.id);
-      setReportTitle(report.title);
       if (report.meeting_notes) setMeetingNotes(report.meeting_notes);
       if (report.fields) setFields(report.fields);
       if (report.metadata) setMetadata(report.metadata);
@@ -119,7 +118,7 @@ export default function ReportInputPage() {
     } finally {
       setLoading(false);
     }
-  }, [setReportId, setReportTitle, setMeetingNotes, setFields, setMetadata, router]);
+  }, [setReportId, setMeetingNotes, setFields, setMetadata, router]);
 
   // ── 페이지 로드 시 기본 스프레드시트 자동 로드 ──
   useEffect(() => {
@@ -339,7 +338,7 @@ export default function ReportInputPage() {
       // DB에 자동 저장
       try {
         const saveBody = {
-          title: reportTitle || fields.companyName || '제목 없음',
+          title: `${fields.companyName || '미정'} - ${fields.diagnosisDate || new Date().toISOString().slice(0, 10)}`,
           company_name: fields.companyName || null,
           meeting_notes: combined,
           fields,
@@ -381,20 +380,19 @@ export default function ReportInputPage() {
 
   const handleCaretSelect = useCallback(async (noteId: string) => {
     setCaretLoading(true);
+    setError('');
     try {
-      const res = await fetch(`/api/report/fetch-caret?action=detail&noteId=${noteId}`);
+      const res = await fetch(`/api/report/fetch-caret?action=detail&noteId=${noteId}`, { cache: 'no-store' });
       if (!res.ok) throw new Error('Caret 노트를 불러올 수 없습니다.');
-      const { content, title } = await res.json();
-      if (content) {
-        setMeetingNotes(meetingNotes ? `${meetingNotes}\n\n---\n[Caret: ${title}]\n${content}` : content);
-      }
+      const data = await res.json();
+      setMeetingNotes(data.content || '');
       setCaretOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Caret 노트 로드 오류');
     } finally {
       setCaretLoading(false);
     }
-  }, [meetingNotes, setMeetingNotes]);
+  }, [setMeetingNotes]);
 
   const hasInput = meetingNotes.trim() || surveyInfo || noteFiles.length > 0;
 
@@ -440,18 +438,7 @@ export default function ReportInputPage() {
           </div>
         )}
 
-        {/* 리포트 제목 */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <label className="text-sm font-semibold text-gray-700 mb-2 block">리포트 제목</label>
-          <input
-            type="text"
-            value={reportTitle}
-            onChange={(e) => setReportTitle(e.target.value)}
-            placeholder="예: 나인다세해 AI 도입 진단"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            disabled={loading}
-          />
-        </div>
+
 
         {/* 미팅 노트 입력 */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
