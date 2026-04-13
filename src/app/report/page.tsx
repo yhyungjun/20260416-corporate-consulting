@@ -115,9 +115,13 @@ export default function ReportInputPage() {
       const { report } = await res.json();
       setReportId(report.id);
       if (report.meeting_notes) setMeetingNotes(report.meeting_notes);
-      if (report.fields) setFields(report.fields);
-      if (report.metadata) setMetadata(report.metadata);
-      router.push('/report/review');
+      if (report.fields) {
+        setFields(report.fields);
+        if (report.metadata) setMetadata(report.metadata);
+        router.push('/report/review');
+      } else {
+        setError('이 리포트에는 분석 데이터가 없습니다. 미팅노트를 입력하고 다시 분석해주세요.');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '리포트 로드 오류');
     } finally {
