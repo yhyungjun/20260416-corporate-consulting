@@ -67,7 +67,7 @@ export default function ReportInputPage() {
   const [error, setError] = useState('');
 
   // 이전 리포트 목록
-  const [savedReports, setSavedReports] = useState<{ id: string; title: string; company_name: string | null; created_at: string }[]>([]);
+  const [savedReports, setSavedReports] = useState<{ id: string; title: string; company_name: string | null; created_at: string; fields: { industry?: string | null; diagnosisDate?: string | null } | null }[]>([]);
   const [reportsLoading, setReportsLoading] = useState(true);
 
   // 노트 파일 상태 (textarea의 수동 입력과 별개로 관리)
@@ -457,6 +457,12 @@ export default function ReportInputPage() {
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
                         {r.company_name && (
                           <span>기업명: <span className="text-gray-700">{r.company_name}</span></span>
+                        )}
+                        {r.fields?.industry && (
+                          <span>업종: <span className="text-gray-700">{r.fields.industry}</span></span>
+                        )}
+                        {r.fields?.diagnosisDate && (
+                          <span>진단일: <span className="text-gray-700">{r.fields.diagnosisDate}</span></span>
                         )}
                         <span>생성일: <span className="text-gray-700">{new Date(r.created_at).toLocaleDateString('ko-KR')}</span></span>
                       </div>
