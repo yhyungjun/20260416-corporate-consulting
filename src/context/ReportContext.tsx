@@ -20,6 +20,10 @@ interface ReportContextType {
   setFields: (fields: ReportFields) => void;
   metadata: ExtractMetadata | null;
   setMetadata: (metadata: ExtractMetadata) => void;
+  reportId: string | null;
+  setReportId: (id: string | null) => void;
+  reportTitle: string;
+  setReportTitle: (title: string) => void;
   ready: boolean;
   resetAll: () => void;
 }
@@ -39,6 +43,8 @@ export function ReportProvider({ children }: { children: ReactNode }) {
   const [meetingNotes, setMeetingNotes] = useState('');
   const [fields, setFieldsRaw] = useState<ReportFields | null>(() => readStorage(STORAGE_KEY_FIELDS));
   const [metadata, setMetadataRaw] = useState<ExtractMetadata | null>(() => readStorage(STORAGE_KEY_METADATA));
+  const [reportId, setReportId] = useState<string | null>(null);
+  const [reportTitle, setReportTitle] = useState('');
   const ready = true;
 
   const setFields = useCallback((f: ReportFields) => {
@@ -55,13 +61,15 @@ export function ReportProvider({ children }: { children: ReactNode }) {
     setMeetingNotes('');
     setFieldsRaw(null);
     setMetadataRaw(null);
+    setReportId(null);
+    setReportTitle('');
     saveToStorage(STORAGE_KEY_FIELDS, null);
     saveToStorage(STORAGE_KEY_METADATA, null);
   };
 
   return (
     <ReportContext.Provider
-      value={{ meetingNotes, setMeetingNotes, fields, setFields, metadata, setMetadata, ready, resetAll }}
+      value={{ meetingNotes, setMeetingNotes, fields, setFields, metadata, setMetadata, reportId, setReportId, reportTitle, setReportTitle, ready, resetAll }}
     >
       {children}
     </ReportContext.Provider>

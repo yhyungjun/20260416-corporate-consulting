@@ -61,10 +61,14 @@ interface SurveyInfo {
 
 export default function ReportInputPage() {
   const router = useRouter();
-  const { meetingNotes, setMeetingNotes, setFields, setMetadata } = useReport();
+  const { meetingNotes, setMeetingNotes, setFields, setMetadata, reportId, setReportId, reportTitle, setReportTitle } = useReport();
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState('');
   const [error, setError] = useState('');
+
+  // 이전 리포트 목록
+  const [savedReports, setSavedReports] = useState<{ id: string; title: string; company_name: string | null; created_at: string }[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(true);
 
   // 노트 파일 상태 (textarea의 수동 입력과 별개로 관리)
   const [noteFiles, setNoteFiles] = useState<NoteFile[]>([]);
@@ -84,6 +88,38 @@ export default function ReportInputPage() {
   // Google Sheets 상태
   const [sheetsUrl, setSheetsUrl] = useState('');
   const [sheetsFetching, setSheetsFetching] = useState(false);
+
+  // ── 페이지 로드 시 이전 리포트 목록 로드 ──
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/report/db');
+        if (!res.ok) return;
+        const { reports } = await res.json();
+        setSavedReports(reports);
+      } catch { /* 무시 */ }
+      finally { setReportsLoading(false); }
+    })();
+  }, []);
+
+  const handleLoadReport = useCallback(async (id: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/report/db?id=${id}`);
+      if (!res.ok) throw new Error('리포트를 불러올 수 없습니다.');
+      const { report } = await res.json();
+      setReportId(report.id);
+      setReportTitle(report.title);
+      if (report.meeting_notes) setMeetingNotes(report.meeting_notes);
+      if (report.fields) setFields(report.fields);
+      if (report.metadata) setMetadata(report.metadata);
+      router.push('/report/review');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '리포트 로드 오류');
+    } finally {
+      setLoading(false);
+    }
+  }, [setReportId, setReportTitle, setMeetingNotes, setFields, setMetadata, router]);
 
   // ── 페이지 로드 시 기본 스프레드시트 자동 로드 ──
   useEffect(() => {
@@ -299,6 +335,25 @@ export default function ReportInputPage() {
       const { fields, metadata } = finalResult as { fields: Parameters<typeof setFields>[0]; metadata: Parameters<typeof setMetadata>[0] };
       setFields(fields);
       setMetadata(metadata);
+
+      // DB에 자동 저장
+      try {
+        const saveBody = {
+          title: reportTitle || fields.companyName || '제목 없음',
+          company_name: fields.companyName || null,
+          meeting_notes: combined,
+          fields,
+          metadata,
+        };
+        if (reportId) {
+          await fetch(`/api/report/db?id=${reportId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(saveBody) });
+        } else {
+          const saveRes = await fetch('/api/report/db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(saveBody) });
+          const { report: saved } = await saveRes.json();
+          if (saved?.id) setReportId(saved.id);
+        }
+      } catch { /* 저장 실패해도 분석 결과는 유지 */ }
+
       router.push('/report/review');
     } catch (e) {
       setError(e instanceof Error ? e.message : '알 수 없는 오류가 발생했습니다.');
@@ -360,6 +415,42 @@ export default function ReportInputPage() {
             <span className="text-gray-300">→</span>
             <span className="text-gray-400">3. 미리보기</span>
           </div>
+        </div>
+
+        {/* 이전 리포트 목록 */}
+        {!reportsLoading && savedReports.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <label className="text-sm font-semibold text-gray-700 mb-3 block">이전 리포트</label>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {savedReports.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => handleLoadReport(r.id)}
+                  disabled={loading}
+                  className="w-full text-left p-3 bg-gray-50 border border-gray-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-colors"
+                >
+                  <div className="text-sm font-medium text-gray-900">{r.title}</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {r.company_name && `${r.company_name} · `}
+                    {new Date(r.created_at).toLocaleDateString('ko-KR')}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 리포트 제목 */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <label className="text-sm font-semibold text-gray-700 mb-2 block">리포트 제목</label>
+          <input
+            type="text"
+            value={reportTitle}
+            onChange={(e) => setReportTitle(e.target.value)}
+            placeholder="예: 나인다세해 AI 도입 진단"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            disabled={loading}
+          />
         </div>
 
         {/* 미팅 노트 입력 */}

@@ -48,10 +48,32 @@ function GuidanceTooltip({ fieldKey, show, onClose }: { fieldKey: string; show: 
 
 export default function ReviewPage() {
   const router = useRouter();
-  const { fields, setFields, metadata, ready } = useReport();
+  const { fields, setFields, metadata, ready, reportId } = useReport();
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [dependencyWarnings, setDependencyWarnings] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
+
+  const handleSave = useCallback(async () => {
+    if (!fields || !reportId) return;
+    setSaving(true);
+    setSaveMsg('');
+    try {
+      const res = await fetch(`/api/report/db?id=${reportId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields, metadata }),
+      });
+      if (!res.ok) throw new Error('저장 실패');
+      setSaveMsg('저장 완료');
+      setTimeout(() => setSaveMsg(''), 3000);
+    } catch {
+      setSaveMsg('저장 실패');
+    } finally {
+      setSaving(false);
+    }
+  }, [fields, metadata, reportId]);
 
   useEffect(() => {
     if (ready && !fields) router.replace('/report');
@@ -342,10 +364,19 @@ export default function ReviewPage() {
             <span>→</span>
             <span>3. 미리보기</span>
           </div>
-          <button
-            onClick={() => router.push('/report/preview')}
-            className="py-2 px-4 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors text-sm flex items-center gap-2"
-          >리포트 확정 →</button>
+          <div className="flex items-center gap-2">
+            {reportId && (
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="py-2 px-4 border border-purple-300 text-purple-700 rounded-lg font-semibold hover:bg-purple-50 transition-colors text-sm"
+              >{saving ? '저장 중...' : saveMsg || '저장'}</button>
+            )}
+            <button
+              onClick={() => router.push('/report/preview')}
+              className="py-2 px-4 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors text-sm flex items-center gap-2"
+            >리포트 확정 →</button>
+          </div>
         </div>
         </div>
       </div>
