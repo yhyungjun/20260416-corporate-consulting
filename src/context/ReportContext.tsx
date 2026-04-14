@@ -26,6 +26,7 @@ export interface GlobalSurveyInfo {
   headers: string[];
   rows: string[][];
   companyNames: string[];
+  editUrls: (string | null)[];
 }
 
 interface ReportContextType {

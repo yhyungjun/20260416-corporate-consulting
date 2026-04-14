@@ -23,7 +23,8 @@ export async function GET() {
     if (!res.ok) return NextResponse.json({ csvText: null });
     const csvText = await res.text();
     if (csvText.trim() === 'Unauthorized') return NextResponse.json({ csvText: null });
-    return NextResponse.json({ csvText });
+    const googleFormUrl = process.env.GOOGLE_FORM_URL || null;
+    return NextResponse.json({ csvText, googleFormUrl });
   } catch {
     return NextResponse.json({ csvText: null });
   }

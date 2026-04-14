@@ -50,7 +50,7 @@ function CompanyOptionsPanel({ companyName, isCompleted, onSelect, onClose }: {
   onClose: () => void;
 }) {
   return (
-    <div className="fixed left-[320px] top-0 h-full w-[240px] bg-white border-r border-gray-200 z-[60] flex flex-col shadow-lg">
+    <div className="fixed left-[356px] top-0 h-full w-[240px] bg-white border-r border-gray-200 z-[60] flex flex-col shadow-lg">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-purple-50">
         <div className="text-sm font-bold text-purple-900 truncate">{companyName}</div>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-sm leading-none">✕</button>
@@ -85,8 +85,8 @@ function CompanyOptionsPanel({ companyName, isCompleted, onSelect, onClose }: {
 }
 
 // ── Level 3: 설문 응답 상세 패널 (질문 전문 + 응답 전문 표시) ──
-function SurveyDetailPanel({ answers, companyName, onClose }: {
-  answers: Record<string, string>; companyName: string; onClose: () => void;
+function SurveyDetailPanel({ answers, companyName, onClose, googleFormUrl, editUrl }: {
+  answers: Record<string, string>; companyName: string; onClose: () => void; googleFormUrl?: string | null; editUrl?: string | null;
 }) {
   const [expandedPart, setExpandedPart] = useState<string | null>('A');
   const gaps = analyzeSurveyGaps(answers);
@@ -94,50 +94,63 @@ function SurveyDetailPanel({ answers, companyName, onClose }: {
   const displayParts = SURVEY_PARTS.filter(p => p.part !== 'S');
 
   return (
-    <div className="fixed left-[560px] top-0 h-full w-[380px] bg-white border-r border-gray-200 z-[60] flex flex-col shadow-lg">
+    <div className="fixed left-[596px] top-0 h-full w-[380px] bg-white border-r border-gray-200 z-[60] flex flex-col shadow-lg">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-purple-50">
         <div className="text-xs font-semibold text-purple-900 truncate">{companyName} — 설문 응답</div>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-sm leading-none">✕</button>
       </div>
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+      {(editUrl || googleFormUrl) && (
+        <a
+          href={editUrl || googleFormUrl || '#'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 px-4 py-2 border-b border-gray-200 text-xs text-purple-600 hover:text-purple-800 hover:bg-purple-50 transition-colors"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          {editUrl ? 'Google Form 개별 응답 보기' : 'Google Form 전체 응답 보기'}
+        </a>
+      )}
+      <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
         {displayParts.map(part => {
           const questions = SURVEY_QUESTIONS.filter(q => q.part === part.part);
           const answered = questions.filter(q => gapMap.get(q.id)?.status === 'answered').length;
           const isExpanded = expandedPart === part.part;
           return (
-            <div key={part.part} className="rounded overflow-hidden">
+            <div key={part.part} className="rounded-lg overflow-hidden">
               <button
                 onClick={() => setExpandedPart(isExpanded ? null : part.part)}
-                className="w-full px-2 py-1.5 bg-gray-50 text-[11px] font-semibold flex items-center justify-between hover:bg-gray-100 rounded"
+                className={`w-full px-3 py-2.5 text-xs font-semibold flex items-center justify-between rounded-lg transition-colors ${
+                  isExpanded ? 'bg-purple-50 text-purple-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
               >
-                <span className="text-gray-700">{part.part}: {part.label}</span>
+                <span>{part.part}: {part.label}</span>
                 <span className="text-gray-400">{answered}/{questions.length}</span>
               </button>
               {isExpanded && (
-                <div className="space-y-0.5 mt-0.5">
+                <div className="space-y-1.5 mt-1.5">
                   {questions.map(q => {
                     const answer = answers[q.id];
                     const gap = gapMap.get(q.id);
                     const followUps = getMeetingFollowUps(q.id);
                     const statusIcon = gap?.status === 'answered' ? '✅' : gap?.status === 'unclear' ? '⚠️' : '❌';
                     return (
-                      <div key={q.id} className={`px-2 py-1.5 text-[11px] rounded ${gap?.status !== 'answered' ? 'bg-red-50' : 'bg-white'}`}>
-                        <div className="flex items-start gap-1 flex-wrap">
-                          <span className="shrink-0">{statusIcon}</span>
+                      <div key={q.id} className={`px-3 py-2.5 text-xs rounded-lg ${gap?.status !== 'answered' ? 'bg-red-50' : 'bg-gray-50'}`}>
+                        <div className="flex items-start gap-1.5">
+                          <span className="shrink-0 mt-0.5">{statusIcon}</span>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1 flex-wrap">
-                              <span className="font-medium text-gray-700">{q.id}.</span>
-                              <span className="text-gray-600">{q.questionText}</span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-gray-800">{q.id}.</span>
+                              <span className="text-gray-700">{q.questionText}</span>
                               {followUps.map((f, fi) => (
-                                <span key={fi} className={`text-[9px] px-1 py-0.5 rounded ${
+                                <span key={fi} className={`text-[10px] px-1.5 py-0.5 rounded ${
                                   f.type === '교차검증' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'
                                 }`}>{f.type}</span>
                               ))}
                             </div>
                             {answer ? (
-                              <div className="mt-1 text-gray-500 bg-gray-50 rounded px-2 py-1 border border-gray-100">{answer}</div>
+                              <div className="mt-1.5 text-sm text-gray-600 bg-white rounded-lg px-3 py-2 border border-gray-100">{answer}</div>
                             ) : (
-                              <div className="mt-0.5 text-red-400 text-[10px]">미응답 — {q.reportSections.join(', ')}에 영향</div>
+                              <div className="mt-1 text-red-400 text-xs">미응답 — {q.reportSections.join(', ')}에 영향</div>
                             )}
                           </div>
                         </div>
@@ -154,56 +167,42 @@ function SurveyDetailPanel({ answers, companyName, onClose }: {
   );
 }
 
-// ── Level 3: 공통질문리스트 패널 ──
-function QuestionListPanel({ activePart, onClose }: { activePart: string; onClose: () => void }) {
-  const [expandedPart, setExpandedPart] = useState<string | null>(activePart);
-  const displayParts = SURVEY_PARTS.filter(p => p.part !== 'S');
+// ── Level 3: 공통질문리스트 섹터 패널 ──
+const QUESTION_SECTORS: Record<string, { label: string; parts: string[] }> = {
+  'q-ab': { label: 'A~B 기본정보 & 성숙도', parts: ['A', 'B'] },
+  'q-cg': { label: 'C~G Pain Point · 장벽 · 전략', parts: ['C', 'D', 'E', 'F', 'G'] },
+  'q-hi': { label: 'H~I 기업현황 & 운영', parts: ['H', 'I'] },
+  'q-j': { label: 'J 시장·보안·문화 심층', parts: ['J'] },
+};
 
-  // activePart prop 변경 시 펼침 상태 동기화
-  useEffect(() => {
-    setExpandedPart(activePart);
-  }, [activePart]);
+function QuestionPagePanel({ sectorKey, onClose }: { sectorKey: string; onClose: () => void }) {
+  const sector = QUESTION_SECTORS[sectorKey];
+  if (!sector) return null;
+
+  const questions = SURVEY_QUESTIONS.filter(q => sector.parts.includes(q.part));
 
   return (
-    <div className="fixed left-[320px] top-0 h-full w-[400px] bg-white border-r border-gray-200 z-[60] flex flex-col shadow-lg">
+    <div className="fixed left-[356px] top-0 h-full w-[420px] bg-white border-r border-gray-200 z-[60] flex flex-col shadow-lg">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
-        <div className="text-xs font-semibold text-gray-900">공통질문리스트</div>
+        <div>
+          <div className="text-sm font-bold text-gray-900">{sector.label}</div>
+          <div className="text-[10px] text-gray-500">{questions.length}개 질문</div>
+        </div>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-sm leading-none">✕</button>
       </div>
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
-        {displayParts.map(part => {
-          const questions = SURVEY_QUESTIONS.filter(q => q.part === part.part);
-          const isExpanded = expandedPart === part.part;
-          return (
-            <div key={part.part} className="rounded overflow-hidden">
-              <button
-                onClick={() => setExpandedPart(isExpanded ? null : part.part)}
-                className={`w-full px-3 py-2 text-[11px] font-semibold flex items-center justify-between rounded transition-colors ${
-                  isExpanded ? 'bg-purple-50 text-purple-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <span>Part {part.part}: {part.label}</span>
-                <span className="text-gray-400">{questions.length}개</span>
-              </button>
-              {isExpanded && (
-                <div className="space-y-0.5 mt-0.5">
-                  {questions.map(q => (
-                    <div key={q.id} className="px-3 py-2 text-[11px] bg-white rounded border-l-2 border-l-purple-200">
-                      <div className="font-semibold text-gray-800 mb-0.5">{q.id}. {q.questionText}</div>
-                      <div className="text-[10px] text-gray-500">📋 {q.purpose}</div>
-                      <div className="text-[10px] text-gray-400">📄 {q.reportSections.join(' · ')}</div>
-                      {q.options && (
-                        <div className="text-[10px] text-gray-400 mt-0.5">
-                          선택지: {q.options.join(' / ')}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        {questions.map(q => (
+          <div key={q.id} className="bg-gray-50 rounded-lg p-3 border-l-3 border-l-purple-300">
+            <div className="text-sm font-semibold text-gray-900 mb-1">{q.id}. {q.questionText}</div>
+            <div className="text-xs text-gray-500 mb-0.5">📋 {q.purpose}</div>
+            <div className="text-xs text-gray-400">📄 {q.reportSections.join(' · ')}</div>
+            {q.options && (
+              <div className="text-xs text-gray-400 mt-1 bg-white rounded px-2 py-1">
+                선택지: {q.options.join(' / ')}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -297,7 +296,7 @@ function MeetingGuidePanel({ answers, companyName, onClose }: {
   };
 
   return (
-    <div className="fixed left-[560px] top-0 h-full w-[380px] bg-white border-r border-gray-200 z-[60] flex flex-col shadow-lg">
+    <div className="fixed left-[596px] top-0 h-full w-[380px] bg-white border-r border-gray-200 z-[60] flex flex-col shadow-lg">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-purple-50">
         <div className="text-xs font-semibold text-purple-900 truncate">{companyName} — 미팅 가이드</div>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-sm leading-none">✕</button>
@@ -369,6 +368,7 @@ export default function GlobalSidebar() {
   const [level3View, setLevel3View] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [googleFormUrl, setGoogleFormUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadReports();
@@ -382,7 +382,8 @@ export default function GlobalSidebar() {
       try {
         const res = await fetch('/api/report/fetch-sheet');
         if (!res.ok) return;
-        const { csvText } = await res.json();
+        const { csvText, googleFormUrl: formUrl } = await res.json();
+        if (formUrl) setGoogleFormUrl(formUrl);
         if (!csvText) return;
         const parsed = parseCSV(csvText);
         if (parsed.length < 2) return;
@@ -390,8 +391,10 @@ export default function GlobalSidebar() {
         const rows = parsed.slice(1);
         const a1Idx = headers.findIndex(h => h.includes('[A1]'));
         const nameIdx = a1Idx >= 0 ? a1Idx : 0;
+        const editUrlIdx = headers.findIndex(h => h.includes('[_EDIT_URL]'));
         const companyNames = rows.map(r => r[nameIdx]?.trim() || '');
-        setGlobalSurveyInfo({ headers, rows, companyNames });
+        const editUrls = rows.map(r => editUrlIdx >= 0 ? (r[editUrlIdx]?.trim() || null) : null);
+        setGlobalSurveyInfo({ headers, rows, companyNames, editUrls });
       } catch {}
     };
     fetchSurvey();
@@ -458,18 +461,6 @@ export default function GlobalSidebar() {
     return null;
   }
 
-  if (!globalSidebarOpen) {
-    return (
-      <button
-        onClick={() => setGlobalSidebarOpen(true)}
-        className="fixed left-0 top-1/2 -translate-y-1/2 z-[60] bg-purple-600 border border-purple-700 border-l-0 rounded-r-xl px-2.5 py-5 shadow-lg hover:bg-purple-700 transition-colors"
-        title="사이드바 열기"
-      >
-        <span className="text-sm font-bold text-white [writing-mode:vertical-lr] tracking-widest">리포트</span>
-      </button>
-    );
-  }
-
   const savedCompanyNames = new Set(savedReports.map(r => r.company_name).filter(Boolean));
   const pendingCompanies: { name: string; idx: number }[] = [];
   const completedCompanies: { name: string; idx: number }[] = [];
@@ -489,60 +480,133 @@ export default function GlobalSidebar() {
     ? globalSurveyInfo.companyNames[selectedCompanyIdx] || ''
     : '';
 
+  const iconBarItems = [
+    { key: 'reports' as const, label: '이전 리포트', icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+    )},
+    { key: 'companies' as const, label: '사전 설문 응답', icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    )},
+    { key: 'questions' as const, label: '공통질문리스트', icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
+    )},
+  ];
+
+  const handleIconClick = (key: 'reports' | 'companies' | 'questions') => {
+    // 이미 열린 같은 섹션 클릭 시 닫지 않음
+    if (globalSidebarOpen && expandedSection === key) return;
+    setGlobalSidebarOpen(true);
+    setExpandedSection(key);
+    if (key !== 'companies') {
+      setSelectedCompanyIdx(null);
+      setSelectedAnswers(null);
+      setLevel3View(null);
+    }
+  };
+
   return (
     <>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 bg-black/20 z-[55]"
-        onClick={() => { setGlobalSidebarOpen(false); setSelectedCompanyIdx(null); setSelectedAnswers(null); setLevel3View(null); }}
-      />
+      {/* Overlay — 패널 열렸을 때만 */}
+      {globalSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/10 z-[55]"
+          onClick={() => { setGlobalSidebarOpen(false); setExpandedSection(null); setSelectedCompanyIdx(null); setSelectedAnswers(null); setLevel3View(null); }}
+        />
+      )}
 
-      {/* Main sidebar — 320px */}
-      <div className="fixed left-0 top-0 h-full w-[320px] bg-white border-r border-gray-200 z-[60] flex flex-col shadow-lg">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-          <span className="text-sm font-semibold text-gray-900">AX 파트너스</span>
-          <button
-            onClick={() => { setGlobalSidebarOpen(false); setSelectedCompanyIdx(null); setSelectedAnswers(null); setLevel3View(null); }}
-            className="text-gray-400 hover:text-gray-600 text-lg leading-none"
-          >✕</button>
-        </div>
+      {/* 아이콘 바 — 항상 표시 */}
+      <div className="fixed left-0 top-0 h-full w-[56px] bg-gray-900 z-[60] flex flex-col items-center pt-3 pb-4 gap-1">
+        {/* 로고 */}
+        <img src="/logo.png" alt="AX" className="w-8 h-8 rounded" />
 
-        {/* 세로 accordion 섹션 */}
-        <div className="flex-1 overflow-y-auto">
-          {/* ── 섹션 1: 이전 리포트 ── */}
+        {/* 패널 열기/닫기 토글 */}
+        <button
+          onClick={() => {
+            if (globalSidebarOpen) {
+              setGlobalSidebarOpen(false);
+              setSelectedCompanyIdx(null);
+              setSelectedAnswers(null);
+              setLevel3View(null);
+            } else {
+              setGlobalSidebarOpen(true);
+              if (!expandedSection) setExpandedSection('reports');
+            }
+          }}
+          className={`w-10 h-8 rounded-lg flex items-center justify-center transition-colors mb-1 ${
+            globalSidebarOpen ? 'bg-purple-600 text-white' : 'text-gray-500 hover:text-white hover:bg-gray-700'
+          }`}
+          title={globalSidebarOpen ? '패널 닫기' : '패널 열기'}
+        >
+          {globalSidebarOpen ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 19l-7-7 7-7"/><path d="M18 19l-7-7 7-7"/></svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 5l7 7-7 7"/><path d="M6 5l7 7-7 7"/></svg>
+          )}
+        </button>
+
+        {/* 구분선 */}
+        <div className="w-8 h-px bg-gray-700 mb-1" />
+
+        {/* 메뉴 아이콘 — hover 시 해당 섹션 패널 열림 */}
+        {iconBarItems.map(item => (
           <button
-            onClick={() => setExpandedSection(expandedSection === 'reports' ? null : 'reports')}
-            className={`w-full text-left px-4 py-3 border-b border-gray-200 flex items-center justify-between transition-colors ${
-              expandedSection === 'reports' ? 'bg-purple-50' : 'hover:bg-gray-50'
+            key={item.key}
+            onClick={() => handleIconClick(item.key)}
+            onMouseEnter={() => {
+              setGlobalSidebarOpen(true);
+              setExpandedSection(item.key);
+              if (item.key !== 'companies') {
+                setSelectedCompanyIdx(null);
+                setSelectedAnswers(null);
+                setLevel3View(null);
+              }
+            }}
+            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors relative group ${
+              globalSidebarOpen && expandedSection === item.key
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-gray-700'
             }`}
+            title={item.label}
           >
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-gray-900">이전 리포트</span>
-              <span className="text-[10px] text-gray-400">{savedReports.length}개</span>
+            {item.icon}
+            <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-[11px] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-[70]">
+              {item.label}
             </div>
-            <span className="text-gray-400 text-xs">{expandedSection === 'reports' ? '▼' : '▶'}</span>
           </button>
-          {expandedSection === 'reports' && (
-            <div className="border-b border-gray-200">
-              {savedReports.length === 0 ? (
+        ))}
+      </div>
+
+      {/* 확장 패널 — 아이콘 클릭 시 열림 */}
+      {globalSidebarOpen && (
+        <div className="fixed left-[56px] top-0 h-full w-[300px] bg-white border-r border-gray-200 z-[60] flex flex-col shadow-lg">
+          {/* 패널 헤더 */}
+          <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+            <div className="text-sm font-bold text-gray-900">
+              {expandedSection === 'reports' && '이전 리포트'}
+              {expandedSection === 'companies' && '사전 설문 응답'}
+              {expandedSection === 'questions' && '공통질문리스트'}
+            </div>
+            <div className="text-[10px] text-gray-500 mt-0.5">
+              {expandedSection === 'reports' && `${savedReports.length}개 리포트`}
+              {expandedSection === 'companies' && (globalSurveyInfo ? `${globalSurveyInfo.companyNames.filter(n => n.trim()).length}개 기업` : '로딩 중...')}
+              {expandedSection === 'questions' && 'A1~J17 질문 레퍼런스'}
+            </div>
+          </div>
+
+          {/* 패널 내용 */}
+          <div className="flex-1 overflow-y-auto">
+            {/* 이전 리포트 */}
+            {expandedSection === 'reports' && (
+              savedReports.length === 0 ? (
                 <div className="p-4 text-xs text-gray-400 text-center">저장된 리포트가 없습니다</div>
               ) : (
                 savedReports.map((r) => (
                   <div key={r.id} className="border-b border-gray-100 hover:bg-gray-50 group">
                     {editingId === r.id ? (
                       <div className="p-2.5">
-                        <input
-                          type="text"
-                          value={editTitle}
-                          onChange={(e) => setEditTitle(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleRenameReport(r.id, editTitle);
-                            if (e.key === 'Escape') setEditingId(null);
-                          }}
-                          autoFocus
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
-                        />
+                        <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') handleRenameReport(r.id, editTitle); if (e.key === 'Escape') setEditingId(null); }}
+                          autoFocus className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900" />
                         <div className="flex gap-1 mt-1">
                           <button onClick={() => handleRenameReport(r.id, editTitle)} className="text-[10px] px-2 py-0.5 bg-purple-600 text-white rounded">저장</button>
                           <button onClick={() => setEditingId(null)} className="text-[10px] px-2 py-0.5 bg-gray-200 text-gray-700 rounded">취소</button>
@@ -569,26 +633,12 @@ export default function GlobalSidebar() {
                     )}
                   </div>
                 ))
-              )}
-            </div>
-          )}
+              )
+            )}
 
-          {/* ── 섹션 2: 사전 설문 응답 ── */}
-          <button
-            onClick={() => setExpandedSection(expandedSection === 'companies' ? null : 'companies')}
-            className={`w-full text-left px-4 py-3 border-b border-gray-200 flex items-center justify-between transition-colors ${
-              expandedSection === 'companies' ? 'bg-purple-50' : 'hover:bg-gray-50'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-gray-900">사전 설문 응답</span>
-              <span className="text-[10px] text-gray-400">{globalSurveyInfo ? globalSurveyInfo.companyNames.filter(n => n.trim()).length + '개' : '...'}</span>
-            </div>
-            <span className="text-gray-400 text-xs">{expandedSection === 'companies' ? '▼' : '▶'}</span>
-          </button>
-          {expandedSection === 'companies' && (
-            <div className="border-b border-gray-200">
-              {!globalSurveyInfo ? (
+            {/* 사전 설문 응답 */}
+            {expandedSection === 'companies' && (
+              !globalSurveyInfo ? (
                 <div className="p-4 text-xs text-gray-400 text-center">설문 데이터 로딩 중...</div>
               ) : (
                 <>
@@ -622,50 +672,38 @@ export default function GlobalSidebar() {
                     </div>
                   )}
                 </>
-              )}
-            </div>
-          )}
+              )
+            )}
 
-          {/* ── 섹션 3: 공통질문리스트 ── */}
-          <button
-            onClick={() => {
-              if (expandedSection === 'questions') {
-                setExpandedSection(null);
-                setLevel3View(null);
-              } else {
-                setExpandedSection('questions');
-                setSelectedCompanyIdx(null);
-                setSelectedAnswers(null);
-                setLevel3View(null);
-              }
-            }}
-            className={`w-full text-left px-4 py-3 border-b border-gray-200 flex items-center justify-between transition-colors ${
-              expandedSection === 'questions' ? 'bg-purple-50' : 'hover:bg-gray-50'
-            }`}
-          >
-            <span className="text-sm font-semibold text-gray-900">공통질문리스트</span>
-            <span className="text-gray-400 text-xs">{expandedSection === 'questions' ? '▼' : '▶'}</span>
-          </button>
-          {expandedSection === 'questions' && (
-            <div className="border-b border-gray-200 p-3">
-              <p className="text-xs text-gray-500 mb-2">AX 사전 진단 공통질문리스트 (A1~J17)</p>
-              {SURVEY_PARTS.filter(p => p.part !== 'S').map(part => {
-                const count = SURVEY_QUESTIONS.filter(q => q.part === part.part).length;
-                return (
-                  <button
-                    key={part.part}
-                    onClick={() => setLevel3View(level3View === ('qpart-' + part.part as never) ? null : ('qpart-' + part.part as never))}
-                    className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-50 rounded flex items-center justify-between"
-                  >
-                    <span className="text-gray-700">Part {part.part}: {part.label}</span>
-                    <span className="text-gray-400 text-[10px]">{count}개</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+            {/* 공통질문리스트 */}
+            {expandedSection === 'questions' && (
+              <div className="p-3 space-y-2">
+                {[
+                  { key: 'q-ab', label: 'A~B 기본정보 & 성숙도', parts: ['A', 'B'] },
+                  { key: 'q-cg', label: 'C~G Pain Point · 장벽 · 전략', parts: ['C', 'D', 'E', 'F', 'G'] },
+                  { key: 'q-hi', label: 'H~I 기업현황 & 운영', parts: ['H', 'I'] },
+                  { key: 'q-j', label: 'J 시장·보안·문화 심층', parts: ['J'] },
+                ].map(sector => {
+                  const count = SURVEY_QUESTIONS.filter(q => sector.parts.includes(q.part)).length;
+                  const isActive = level3View === sector.key;
+                  return (
+                    <button
+                      key={sector.key}
+                      onClick={() => setLevel3View(isActive ? null : sector.key)}
+                      className={`w-full text-left px-4 py-3 rounded-lg flex items-center justify-between transition-colors ${
+                        isActive ? 'bg-purple-100 border-2 border-purple-400 text-purple-700' : 'bg-gray-50 border-2 border-transparent text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <span className="text-sm font-semibold">{sector.label}</span>
+                      <span className="text-xs text-gray-400">{count}개</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Level 2: 기업 선택 후 미팅가이드/설문응답 선택 */}
       {selectedCompanyIdx !== null && selectedAnswers && (
@@ -690,6 +728,8 @@ export default function GlobalSidebar() {
           answers={selectedAnswers}
           companyName={selectedCompanyName}
           onClose={() => setLevel3View(null)}
+          googleFormUrl={googleFormUrl}
+          editUrl={selectedCompanyIdx !== null && globalSurveyInfo ? globalSurveyInfo.editUrls[selectedCompanyIdx] : null}
         />
       )}
       {selectedCompanyIdx !== null && selectedAnswers && level3View === 'guide' && (
@@ -701,9 +741,9 @@ export default function GlobalSidebar() {
       )}
 
       {/* Level 3: 공통질문리스트 상세 패널 */}
-      {expandedSection === 'questions' && level3View?.startsWith('qpart-') && (
-        <QuestionListPanel
-          activePart={level3View.replace('qpart-', '')}
+      {expandedSection === 'questions' && level3View?.startsWith('q-') && (
+        <QuestionPagePanel
+          sectorKey={level3View}
           onClose={() => setLevel3View(null)}
         />
       )}
