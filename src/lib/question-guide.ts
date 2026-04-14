@@ -1146,9 +1146,9 @@ export const ONLINE_MEETING_GUIDE: MeetingGuideQuestion[] = [
     phaseLabel: '아이스브레이킹',
     phaseDuration: '5분',
     questionTemplate:
-      '현재 AI 도구 중 개인적으로 가장 자주 쓰시는 게 있으신가요?',
-    purpose: 'AI 친숙도 및 선호도 레벨 파악',
-    reportSections: ['P3', 'P13'],
+      '현재 AI 도구 중 개인적으로 가장 자주 쓰시는 게 있으신가요? 팀·부서 전체에서 AI 도구를 일상적으로 사용하는 직원은 몇 명이고, 전체 인원 대비 몇 %로 보시나요?',
+    purpose: 'AI 친숙도 및 선호도 레벨 파악 + 전사 AI 도입률 정량화',
+    reportSections: ['P3', 'P6', 'P13'],
     relatedSurveyIds: ['B6', 'S6', 'S7'],
   },
   {
@@ -1162,17 +1162,6 @@ export const ONLINE_MEETING_GUIDE: MeetingGuideQuestion[] = [
     reportSections: ['P9'],
     relatedSurveyIds: ['B10'],
   },
-  {
-    id: 'phase1-q4',
-    phase: 1,
-    phaseLabel: '아이스브레이킹',
-    phaseDuration: '5분',
-    questionTemplate:
-      '현재 팀·부서 전체에서 AI 도구를 일상적으로 사용하는 직원이 몇 명이고, 전체 인원 대비 몇 %로 보시나요?',
-    purpose: '전사 AI 도입률 정량화 → AI 도입 단계 판정 데이터 수집',
-    reportSections: ['P3', 'P6'],
-    relatedSurveyIds: ['B6', 'S6'],
-  },
 
   // ── Phase 2: 현황 파악 (10분) ──────────────────────────────────────────
   {
@@ -1181,9 +1170,9 @@ export const ONLINE_MEETING_GUIDE: MeetingGuideQuestion[] = [
     phaseLabel: '현황 파악',
     phaseDuration: '10분',
     questionTemplate:
-      "설문에서 '프로세스 표준화'에 {B1.label}이라고 하셨는데, 가장 표준화되지 않은 프로세스가 무엇인가요?",
-    purpose: 'B1 정성 검증 + 핵심 병목 특정',
-    reportSections: ['P4 지표1', 'P5'],
+      "설문에서 '프로세스 표준화'에 {B1.label}이라고 하셨는데, 업무 프로세스가 문서화되어 있나요? 가장 표준화되지 않은 프로세스는 무엇인가요?",
+    purpose: 'B1 정성 검증 + 프로세스 문서화 수준 + 핵심 병목 특정',
+    reportSections: ['P4 지표1', 'P5', 'P8'],
     relatedSurveyIds: ['B1', 'B2'],
   },
   {
@@ -1192,8 +1181,8 @@ export const ONLINE_MEETING_GUIDE: MeetingGuideQuestion[] = [
     phaseLabel: '현황 파악',
     phaseDuration: '10분',
     questionTemplate:
-      '가장 시간이 많이 드는 반복 업무가 뭔가요? 한 주에 몇 시간 정도 걸리나요?',
-    purpose: 'C3 정성 검증 + ROI 산출 근거 → 자동화 우선순위',
+      '가장 오래 걸리는 반복 업무 하나를 기준으로, 월간 총 소요 시간(h)과 담당 인원(명)을 알려주실 수 있나요? 만약 이 업무가 50% 자동화된다면 월 몇 시간을 절약할 수 있을까요?',
+    purpose: 'C3 정성 검증 + 자동화 ROI 정량 계산 근거 확보',
     reportSections: ['P5', 'P10', 'P14'],
     relatedSurveyIds: ['C3', 'I3'],
   },
@@ -1213,21 +1202,11 @@ export const ONLINE_MEETING_GUIDE: MeetingGuideQuestion[] = [
     phase: 2,
     phaseLabel: '현황 파악',
     phaseDuration: '10분',
-    questionTemplate: '데이터가 어디에 흩어져 있나요?',
-    purpose: '데이터 통합 수준 정성 검증 (B7 교차검증)',
+    questionTemplate:
+      '데이터가 어디에 흩어져 있나요? 몇 개의 별도 시스템에 분산되어 있나요?',
+    purpose: '데이터 통합 수준 정성 검증 + 분산 시스템 수 정량화 (B7 교차검증)',
     reportSections: ['P4 지표4', 'P6'],
     relatedSurveyIds: ['B7'],
-  },
-  {
-    id: 'phase2-q5',
-    phase: 2,
-    phaseLabel: '현황 파악',
-    phaseDuration: '10분',
-    questionTemplate:
-      '업무 프로세스가 문서화되어 있나요? 누가 관리하고 있나요?',
-    purpose: '프로세스 성숙도 정성 검증 (B1/B2 교차검증)',
-    reportSections: ['P4 지표1', 'P8'],
-    relatedSurveyIds: ['B1', 'B2'],
   },
   {
     id: 'phase2-q6',
@@ -1239,17 +1218,6 @@ export const ONLINE_MEETING_GUIDE: MeetingGuideQuestion[] = [
     purpose: '도구 최적화 수준 및 통합도 정성 파악 (B5 검증)',
     reportSections: ['P4 지표3', 'P6'],
     relatedSurveyIds: ['B5', 'I1'],
-  },
-  {
-    id: 'phase2-q7',
-    phase: 2,
-    phaseLabel: '현황 파악',
-    phaseDuration: '10분',
-    questionTemplate:
-      '가장 오래 걸리는 반복 업무 하나를 기준으로, 월간 총 소요 시간(h)과 담당 인원(명)을 알려주실 수 있나요? 만약 이 업무가 50% 자동화된다면 월 몇 시간을 절약할 수 있을까요?',
-    purpose: '자동화 ROI 정량 계산 근거 확보 (I3 설문 교차검증)',
-    reportSections: ['P5', 'P14'],
-    relatedSurveyIds: ['I3', 'C3'],
   },
   {
     id: 'phase2-q8',
@@ -1268,11 +1236,32 @@ export const ONLINE_MEETING_GUIDE: MeetingGuideQuestion[] = [
     phaseLabel: '현황 파악',
     phaseDuration: '10분',
     questionTemplate:
-      '데이터 저장 공간이 몇 개의 별도 시스템에 분산되어 있나요?',
-    purpose:
-      '데이터 분산 수준 정량화 (B7 설문 심화) → 데이터 통합 과제 우선순위',
-    reportSections: ['P4 지표4', 'P6'],
-    relatedSurveyIds: ['B7'],
+      '현재 업무에서 가장 답답하거나 시간이 많이 드는 상황을 구체적으로 설명해주세요. 해당 부서의 핵심 반복 업무 Top 3는 무엇인가요?',
+    purpose: 'Pain Point 정성 데이터 + 혁신 과제 원천 데이터 (구체 업무명)',
+    reportSections: ['P5', 'P10'],
+    relatedSurveyIds: ['C2', 'I8'],
+  },
+  {
+    id: 'phase2-q10',
+    phase: 2,
+    phaseLabel: '현황 파악',
+    phaseDuration: '10분',
+    questionTemplate:
+      '보고서 한 건 작성에 보통 몇 시간 걸리나요? 승인·결재 대기로 업무가 지연되는 경우가 얼마나 자주 있나요?',
+    purpose: '보고서 자동화 ROI + 결재 병목 정량 확인',
+    reportSections: ['P5', 'P10', 'P14'],
+    relatedSurveyIds: ['I4', 'I5'],
+  },
+  {
+    id: 'phase2-q11',
+    phase: 2,
+    phaseLabel: '현황 파악',
+    phaseDuration: '10분',
+    questionTemplate:
+      '해당 부서에서 매일 사용하는 핵심 도구·시스템은 무엇인가요? (ERP, CRM, Salesforce 등)',
+    purpose: '구체 시스템명 확보 → 연동 과제 설계 정밀도 향상',
+    reportSections: ['P6', 'P10'],
+    relatedSurveyIds: ['J10'],
   },
 
   // ── Phase 3: 니즈/장벽 심화 (10분) ─────────────────────────────────────
@@ -1365,6 +1354,39 @@ export const ONLINE_MEETING_GUIDE: MeetingGuideQuestion[] = [
     reportSections: ['P5', 'P7', 'P14'],
     relatedSurveyIds: ['B4'],
   },
+  {
+    id: 'phase3-q8',
+    phase: 3,
+    phaseLabel: '니즈/장벽 심화',
+    phaseDuration: '10분',
+    questionTemplate:
+      '업무 수행 시 반드시 준수해야 할 규제나 인증이 있나요? 사내 AI 데이터 가이드라인, 데이터 백업 체계, PC 보안 정책은 어느 수준인가요?',
+    purpose: '컴플라이언스 + AI 거버넌스 + 보안 인프라 수준 종합 파악',
+    reportSections: ['P6', 'P7', 'P9'],
+    relatedSurveyIds: ['D2', 'J4', 'J5', 'J6'],
+  },
+  {
+    id: 'phase3-q9',
+    phase: 3,
+    phaseLabel: '니즈/장벽 심화',
+    phaseDuration: '10분',
+    questionTemplate:
+      '사내에 AI/디지털 전담 인력이 있나요? 직원들이 개인적으로 AI 도구를 구독해서 쓰고 있나요?',
+    purpose: 'AI 전담 조직 유무 + Shadow IT(비공식 AI 지출) 실태 파악',
+    reportSections: ['P3', 'P6', 'P7', 'P9'],
+    relatedSurveyIds: ['H7', 'H8'],
+  },
+  {
+    id: 'phase3-q10',
+    phase: 3,
+    phaseLabel: '니즈/장벽 심화',
+    phaseDuration: '10분',
+    questionTemplate:
+      'AI가 24시간 일하는 가상 인턴을 배정한다면 어떤 업무를 시키겠나요? 성공적인 AI 도입이란 귀사에서 어떤 의미인가요? 반드시 사람이 해야 한다고 생각하는 업무는?',
+    purpose: 'Quick Win 과제 발굴 + 고객 성공 기준 + AI 수용 경계선 파악',
+    reportSections: ['P5', 'P7', 'P9', 'P10', 'P13', 'P14'],
+    relatedSurveyIds: ['J11', 'J14', 'J16', 'J17'],
+  },
 
   // ── Phase 4: 의사결정/예산 (5분) ───────────────────────────────────────
   {
@@ -1423,6 +1445,28 @@ export const ONLINE_MEETING_GUIDE: MeetingGuideQuestion[] = [
       'KPI 수치 현장 합의 → P14 KPI 프레임워크의 가장 중요한 입력값',
     reportSections: ['P13', 'P14', 'P15'],
     relatedSurveyIds: ['G1'],
+  },
+  {
+    id: 'phase4-q6',
+    phase: 4,
+    phaseLabel: '의사결정/예산',
+    phaseDuration: '5분',
+    questionTemplate:
+      'AX를 가장 먼저 도입하고 싶은 부서와 인원은 몇 명인가요? 그 부서를 선택한 이유는? 솔루션 선택 시 가장 중요한 기준은 무엇인가요?',
+    purpose: '파일럿 범위 확정 + 로드맵 Phase 1 + 솔루션 제안 우선순위',
+    reportSections: ['P9', 'P10', 'P12', 'P14', 'P15'],
+    relatedSurveyIds: ['I6', 'I7', 'G2', 'F3', 'F1'],
+  },
+  {
+    id: 'phase4-q7',
+    phase: 4,
+    phaseLabel: '의사결정/예산',
+    phaseDuration: '5분',
+    questionTemplate:
+      '경쟁사의 AI 활용 수준이나 정부 지원 현황, 최근 사업 환경 변화가 AX 도입 결정에 영향을 주고 있나요?',
+    purpose: '외부 환경(경쟁, 정책, 시장) 정성 맥락 → SWOT 기회/위협 보강',
+    reportSections: ['P6', 'P7'],
+    relatedSurveyIds: ['J1', 'J2', 'J3'],
   },
 ];
 
@@ -1589,7 +1633,7 @@ export const SURVEY_PARTS = [
 
 export const MEETING_PHASES = [
   { phase: 1, label: '아이스브레이킹', duration: '5분' },
-  { phase: 2, label: '현황 파악', duration: '10분' },
+  { phase: 2, label: '현황 파악', duration: '15분' },
   { phase: 3, label: '니즈/장벽 심화', duration: '10분' },
   { phase: 4, label: '의사결정/예산', duration: '5분' },
 ];

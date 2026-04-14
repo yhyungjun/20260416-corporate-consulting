@@ -43,9 +43,10 @@ function parseCSV(text: string): string[][] {
 }
 
 // ── Level 2: 기업 선택 후 미팅가이드/설문응답 선택 패널 ──
-function CompanyOptionsPanel({ companyName, onSelect, onClose }: {
+function CompanyOptionsPanel({ companyName, isCompleted, onSelect, onClose }: {
   companyName: string;
-  onSelect: (view: 'guide' | 'survey') => void;
+  isCompleted: boolean;
+  onSelect: (view: string) => void;
   onClose: () => void;
 }) {
   return (
@@ -69,6 +70,15 @@ function CompanyOptionsPanel({ companyName, onSelect, onClose }: {
           <div className="text-xs font-semibold text-gray-900 group-hover:text-purple-700">설문 응답</div>
           <div className="text-[10px] text-gray-500 mt-0.5">Part별 설문 응답 확인</div>
         </button>
+        {isCompleted && (
+          <button
+            onClick={() => onSelect('report')}
+            className="w-full text-left p-3 rounded-lg border border-green-200 hover:border-green-400 hover:bg-green-50 transition-colors group"
+          >
+            <div className="text-xs font-semibold text-gray-900 group-hover:text-green-700">이전 리포트</div>
+            <div className="text-[10px] text-gray-500 mt-0.5">리뷰에서 생성된 리포트 데이터 확인</div>
+          </button>
+        )}
       </div>
     </div>
   );
@@ -134,6 +144,61 @@ function SurveyDetailPanel({ answers, companyName, onClose }: {
                       </div>
                     );
                   })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Level 3: 공통질문리스트 패널 ──
+function QuestionListPanel({ activePart, onClose }: { activePart: string; onClose: () => void }) {
+  const [expandedPart, setExpandedPart] = useState<string | null>(activePart);
+  const displayParts = SURVEY_PARTS.filter(p => p.part !== 'S');
+
+  // activePart prop 변경 시 펼침 상태 동기화
+  useEffect(() => {
+    setExpandedPart(activePart);
+  }, [activePart]);
+
+  return (
+    <div className="fixed left-[320px] top-0 h-full w-[400px] bg-white border-r border-gray-200 z-[60] flex flex-col shadow-lg">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <div className="text-xs font-semibold text-gray-900">공통질문리스트</div>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-sm leading-none">✕</button>
+      </div>
+      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        {displayParts.map(part => {
+          const questions = SURVEY_QUESTIONS.filter(q => q.part === part.part);
+          const isExpanded = expandedPart === part.part;
+          return (
+            <div key={part.part} className="rounded overflow-hidden">
+              <button
+                onClick={() => setExpandedPart(isExpanded ? null : part.part)}
+                className={`w-full px-3 py-2 text-[11px] font-semibold flex items-center justify-between rounded transition-colors ${
+                  isExpanded ? 'bg-purple-50 text-purple-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <span>Part {part.part}: {part.label}</span>
+                <span className="text-gray-400">{questions.length}개</span>
+              </button>
+              {isExpanded && (
+                <div className="space-y-0.5 mt-0.5">
+                  {questions.map(q => (
+                    <div key={q.id} className="px-3 py-2 text-[11px] bg-white rounded border-l-2 border-l-purple-200">
+                      <div className="font-semibold text-gray-800 mb-0.5">{q.id}. {q.questionText}</div>
+                      <div className="text-[10px] text-gray-500">📋 {q.purpose}</div>
+                      <div className="text-[10px] text-gray-400">📄 {q.reportSections.join(' · ')}</div>
+                      {q.options && (
+                        <div className="text-[10px] text-gray-400 mt-0.5">
+                          선택지: {q.options.join(' / ')}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -298,10 +363,10 @@ export default function GlobalSidebar() {
     setReportTitle,
   } = useReport();
 
-  const [activeTab, setActiveTab] = useState<'reports' | 'companies'>('reports');
+  const [expandedSection, setExpandedSection] = useState<'reports' | 'companies' | 'questions' | null>(null);
   const [selectedCompanyIdx, setSelectedCompanyIdx] = useState<number | null>(null);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string> | null>(null);
-  const [level3View, setLevel3View] = useState<'guide' | 'survey' | null>(null);
+  const [level3View, setLevel3View] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
 
@@ -443,30 +508,23 @@ export default function GlobalSidebar() {
           >✕</button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200">
-          <button
-            onClick={() => setActiveTab('reports')}
-            className={`flex-1 py-2.5 text-xs font-semibold text-center transition-colors ${
-              activeTab === 'reports'
-                ? 'text-purple-700 border-b-2 border-purple-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >이전 리포트</button>
-          <button
-            onClick={() => setActiveTab('companies')}
-            className={`flex-1 py-2.5 text-xs font-semibold text-center transition-colors ${
-              activeTab === 'companies'
-                ? 'text-purple-700 border-b-2 border-purple-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >설문 기업</button>
-        </div>
-
-        {/* Tab content */}
+        {/* 세로 accordion 섹션 */}
         <div className="flex-1 overflow-y-auto">
-          {activeTab === 'reports' && (
-            <div>
+          {/* ── 섹션 1: 이전 리포트 ── */}
+          <button
+            onClick={() => setExpandedSection(expandedSection === 'reports' ? null : 'reports')}
+            className={`w-full text-left px-4 py-3 border-b border-gray-200 flex items-center justify-between transition-colors ${
+              expandedSection === 'reports' ? 'bg-purple-50' : 'hover:bg-gray-50'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-gray-900">이전 리포트</span>
+              <span className="text-[10px] text-gray-400">{savedReports.length}개</span>
+            </div>
+            <span className="text-gray-400 text-xs">{expandedSection === 'reports' ? '▼' : '▶'}</span>
+          </button>
+          {expandedSection === 'reports' && (
+            <div className="border-b border-gray-200">
               {savedReports.length === 0 ? (
                 <div className="p-4 text-xs text-gray-400 text-center">저장된 리포트가 없습니다</div>
               ) : (
@@ -492,10 +550,7 @@ export default function GlobalSidebar() {
                       </div>
                     ) : (
                       <div className="flex items-center">
-                        <button
-                          onClick={() => handleLoadReport(r.id)}
-                          className="flex-1 text-left p-2.5 min-w-0"
-                        >
+                        <button onClick={() => handleLoadReport(r.id)} className="flex-1 text-left p-2.5 min-w-0">
                           <div className="text-xs font-medium text-gray-900 truncate">{r.title}</div>
                           <div className="text-[10px] text-gray-500 mt-0.5 flex gap-2">
                             {r.fields?.industry && <span>{r.fields.industry}</span>}
@@ -503,16 +558,10 @@ export default function GlobalSidebar() {
                           </div>
                         </button>
                         <div className="flex items-center gap-0.5 pr-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                          <button
-                            onClick={() => { setEditingId(r.id); setEditTitle(r.title); }}
-                            className="p-1 text-gray-400 hover:text-purple-600 rounded" title="이름 변경"
-                          >
+                          <button onClick={() => { setEditingId(r.id); setEditTitle(r.title); }} className="p-1 text-gray-400 hover:text-purple-600 rounded" title="이름 변경">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                           </button>
-                          <button
-                            onClick={() => { if (confirm(`"${r.title}" 리포트를 삭제하시겠습니까?`)) handleDeleteReport(r.id); }}
-                            className="p-1 text-gray-400 hover:text-red-600 rounded" title="삭제"
-                          >
+                          <button onClick={() => { if (confirm(`"${r.title}" 리포트를 삭제하시겠습니까?`)) handleDeleteReport(r.id); }} className="p-1 text-gray-400 hover:text-red-600 rounded" title="삭제">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                           </button>
                         </div>
@@ -524,27 +573,30 @@ export default function GlobalSidebar() {
             </div>
           )}
 
-          {activeTab === 'companies' && (
-            <div>
+          {/* ── 섹션 2: 사전 설문 응답 ── */}
+          <button
+            onClick={() => setExpandedSection(expandedSection === 'companies' ? null : 'companies')}
+            className={`w-full text-left px-4 py-3 border-b border-gray-200 flex items-center justify-between transition-colors ${
+              expandedSection === 'companies' ? 'bg-purple-50' : 'hover:bg-gray-50'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-gray-900">사전 설문 응답</span>
+              <span className="text-[10px] text-gray-400">{globalSurveyInfo ? globalSurveyInfo.companyNames.filter(n => n.trim()).length + '개' : '...'}</span>
+            </div>
+            <span className="text-gray-400 text-xs">{expandedSection === 'companies' ? '▼' : '▶'}</span>
+          </button>
+          {expandedSection === 'companies' && (
+            <div className="border-b border-gray-200">
               {!globalSurveyInfo ? (
                 <div className="p-4 text-xs text-gray-400 text-center">설문 데이터 로딩 중...</div>
-              ) : globalSurveyInfo.companyNames.length === 0 ? (
-                <div className="p-4 text-xs text-gray-400 text-center">설문 데이터 없음</div>
               ) : (
                 <>
                   {pendingCompanies.length > 0 && (
                     <div>
-                      <div className="px-3 py-2 text-[10px] font-semibold text-yellow-700 uppercase tracking-wider bg-yellow-50">
-                        예정 ({pendingCompanies.length})
-                      </div>
+                      <div className="px-3 py-1.5 text-[10px] font-semibold text-yellow-700 uppercase tracking-wider bg-yellow-50">예정 ({pendingCompanies.length})</div>
                       {pendingCompanies.map(({ name, idx }) => (
-                        <button
-                          key={idx}
-                          onClick={() => handleSelectCompany(idx)}
-                          className={`w-full text-left p-2.5 border-b border-gray-100 transition-colors ${
-                            selectedCompanyIdx === idx ? 'bg-purple-50' : 'hover:bg-gray-50'
-                          }`}
-                        >
+                        <button key={idx} onClick={() => handleSelectCompany(idx)} className={`w-full text-left p-2.5 border-b border-gray-100 transition-colors ${selectedCompanyIdx === idx ? 'bg-purple-50' : 'hover:bg-gray-50'}`}>
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-medium text-gray-900">{name}</span>
                             {selectedCompanyIdx === idx && <span className="text-[10px] text-purple-600">보는 중</span>}
@@ -553,20 +605,11 @@ export default function GlobalSidebar() {
                       ))}
                     </div>
                   )}
-
                   {completedCompanies.length > 0 && (
                     <div>
-                      <div className="px-3 py-2 text-[10px] font-semibold text-green-700 uppercase tracking-wider bg-green-50">
-                        진행 ({completedCompanies.length})
-                      </div>
+                      <div className="px-3 py-1.5 text-[10px] font-semibold text-green-700 uppercase tracking-wider bg-green-50">진행 ({completedCompanies.length})</div>
                       {completedCompanies.map(({ name, idx }) => (
-                        <button
-                          key={idx}
-                          onClick={() => handleSelectCompany(idx)}
-                          className={`w-full text-left p-2.5 border-b border-gray-100 transition-colors ${
-                            selectedCompanyIdx === idx ? 'bg-purple-50' : 'hover:bg-gray-50'
-                          }`}
-                        >
+                        <button key={idx} onClick={() => handleSelectCompany(idx)} className={`w-full text-left p-2.5 border-b border-gray-100 transition-colors ${selectedCompanyIdx === idx ? 'bg-purple-50' : 'hover:bg-gray-50'}`}>
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-medium text-gray-900">{name}</span>
                             <div className="flex items-center gap-1.5">
@@ -582,6 +625,45 @@ export default function GlobalSidebar() {
               )}
             </div>
           )}
+
+          {/* ── 섹션 3: 공통질문리스트 ── */}
+          <button
+            onClick={() => {
+              if (expandedSection === 'questions') {
+                setExpandedSection(null);
+                setLevel3View(null);
+              } else {
+                setExpandedSection('questions');
+                setSelectedCompanyIdx(null);
+                setSelectedAnswers(null);
+                setLevel3View(null);
+              }
+            }}
+            className={`w-full text-left px-4 py-3 border-b border-gray-200 flex items-center justify-between transition-colors ${
+              expandedSection === 'questions' ? 'bg-purple-50' : 'hover:bg-gray-50'
+            }`}
+          >
+            <span className="text-sm font-semibold text-gray-900">공통질문리스트</span>
+            <span className="text-gray-400 text-xs">{expandedSection === 'questions' ? '▼' : '▶'}</span>
+          </button>
+          {expandedSection === 'questions' && (
+            <div className="border-b border-gray-200 p-3">
+              <p className="text-xs text-gray-500 mb-2">AX 사전 진단 공통질문리스트 (A1~J17)</p>
+              {SURVEY_PARTS.filter(p => p.part !== 'S').map(part => {
+                const count = SURVEY_QUESTIONS.filter(q => q.part === part.part).length;
+                return (
+                  <button
+                    key={part.part}
+                    onClick={() => setLevel3View(level3View === ('qpart-' + part.part as never) ? null : ('qpart-' + part.part as never))}
+                    className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-50 rounded flex items-center justify-between"
+                  >
+                    <span className="text-gray-700">Part {part.part}: {part.label}</span>
+                    <span className="text-gray-400 text-[10px]">{count}개</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
@@ -589,12 +671,20 @@ export default function GlobalSidebar() {
       {selectedCompanyIdx !== null && selectedAnswers && (
         <CompanyOptionsPanel
           companyName={selectedCompanyName}
-          onSelect={(view) => setLevel3View(view)}
+          isCompleted={savedCompanyNames.has(selectedCompanyName)}
+          onSelect={(view) => {
+            if (view === 'report') {
+              const matched = savedReports.find(r => r.company_name === selectedCompanyName);
+              if (matched) handleLoadReport(matched.id);
+            } else {
+              setLevel3View(view);
+            }
+          }}
           onClose={() => { setSelectedCompanyIdx(null); setSelectedAnswers(null); setLevel3View(null); }}
         />
       )}
 
-      {/* Level 3: 상세 패널 */}
+      {/* Level 3: 상세 패널 — 기업 설문/미팅가이드 */}
       {selectedCompanyIdx !== null && selectedAnswers && level3View === 'survey' && (
         <SurveyDetailPanel
           answers={selectedAnswers}
@@ -606,6 +696,14 @@ export default function GlobalSidebar() {
         <MeetingGuidePanel
           answers={selectedAnswers}
           companyName={selectedCompanyName}
+          onClose={() => setLevel3View(null)}
+        />
+      )}
+
+      {/* Level 3: 공통질문리스트 상세 패널 */}
+      {expandedSection === 'questions' && level3View?.startsWith('qpart-') && (
+        <QuestionListPanel
+          activePart={level3View.replace('qpart-', '')}
           onClose={() => setLevel3View(null)}
         />
       )}
