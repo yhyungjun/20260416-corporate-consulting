@@ -46,9 +46,10 @@ export async function listReports(): Promise<SavedReport[]> {
 }
 
 export async function getReport(id: string): Promise<SavedReport> {
-  const data = await apphubFetch<{ rows: SavedReport[] }>(`${TABLE_URL}&filter=id:${id}`);
-  if (!data.rows.length) throw new Error('리포트를 찾을 수 없습니다.');
-  return (data.rows[0]);
+  // 단일 row 조회는 `/rows/{id}` 엔드포인트 사용
+  // (기존 `filter=id:${id}` 방식은 필터가 무시되고 첫 번째 row만 반환되는 버그가 있었음)
+  const row = await apphubFetch<SavedReport>(rowUrl(id));
+  return row;
 }
 
 export async function createReport(input: {
