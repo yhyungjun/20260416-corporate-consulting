@@ -5,7 +5,12 @@ import { useSearchParams } from 'next/navigation';
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const paymentKey = searchParams.get('paymentKey');
+  const orderId = searchParams.get('orderId');
+  const amount = searchParams.get('amount');
+  const isValid = !!(paymentKey && orderId && amount);
+
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(isValid ? 'loading' : 'error');
   const [orderInfo, setOrderInfo] = useState<{
     orderId: string;
     orderName: string;
@@ -13,18 +18,10 @@ function SuccessContent() {
     method: string;
     questionnaireToken?: string;
   } | null>(null);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState(isValid ? '' : '결제 정보가 유효하지 않습니다.');
 
   useEffect(() => {
-    const paymentKey = searchParams.get('paymentKey');
-    const orderId = searchParams.get('orderId');
-    const amount = searchParams.get('amount');
-
-    if (!paymentKey || !orderId || !amount) {
-      setStatus('error');
-      setErrorMessage('결제 정보가 유효하지 않습니다.');
-      return;
-    }
+    if (!isValid) return;
 
     fetch('/api/payment/confirm', {
       method: 'POST',
@@ -41,7 +38,7 @@ function SuccessContent() {
         setStatus('error');
         setErrorMessage(err.message);
       });
-  }, [searchParams]);
+  }, [isValid, paymentKey, orderId, amount]);
 
   if (status === 'loading') {
     return (
