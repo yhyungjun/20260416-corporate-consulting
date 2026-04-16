@@ -416,7 +416,7 @@ export default function GlobalSidebar() {
       if (report.fields) {
         setFields(report.fields);
         if (report.metadata) setMetadata(report.metadata);
-        router.push('/report/review');
+        router.push('/admin/report/review');
       }
       // 사이드바 및 Level 2/3 패널 전체 리셋 (겹침 방지)
       setGlobalSidebarOpen(false);

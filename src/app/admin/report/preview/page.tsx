@@ -53,7 +53,7 @@ export default function PreviewPage() {
   useEffect(() => {
     if (!ready) return;
     if (!fields) {
-      router.replace('/report');
+      router.replace('/admin/report');
       return;
     }
 
@@ -218,7 +218,7 @@ ${allPagesHtml}
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <button
-              onClick={() => router.push('/report/review')}
+              onClick={() => router.push('/admin/report/review')}
               className="py-2 px-4 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm"
             >
               ← 뒤로

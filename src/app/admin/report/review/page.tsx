@@ -108,7 +108,7 @@ export default function ReviewPage() {
   }, [fields, metadata, reportId, reportTitle, setReportId]);
 
   useEffect(() => {
-    if (ready && !fields) router.replace('/report');
+    if (ready && !fields) router.replace('/admin/report');
   }, [ready, fields, router]);
 
   const scrollToField = useCallback((fieldId: string) => {
@@ -386,7 +386,7 @@ export default function ReviewPage() {
         <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
-            onClick={() => router.push('/report')}
+            onClick={() => router.push('/admin/report')}
             className="py-2 px-4 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm"
           >← 뒤로</button>
           <div className="flex items-center gap-2 text-xs text-gray-400">
@@ -405,7 +405,7 @@ export default function ReviewPage() {
               >{saving ? '저장 중...' : saveMsg || '저장'}</button>
             )}
             <button
-              onClick={() => router.push('/report/preview')}
+              onClick={() => router.push('/admin/report/preview')}
               className="py-2 px-4 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors text-sm flex items-center gap-2"
             >리포트 확정 →</button>
           </div>
