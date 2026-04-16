@@ -136,16 +136,7 @@ export default function PayPage() {
           <div className="bg-white rounded-xl border border-gray-200 p-6 mt-4">
             <h4 className="text-sm font-semibold text-gray-900 mb-3">취소/환불 규정</h4>
             <div className="text-sm text-gray-600 space-y-2">
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>결제 후 사전 설문 작성 전: 전액 환불 가능</li>
-                <li>사전 설문 작성 완료 후 ~ 미팅 전: 결제 금액의 80% 환불</li>
-                <li>컨설턴트 미팅 완료 후: 환불 불가 (디지털 콘텐츠 제공 완료)</li>
-                <li>환불 요청: contact@jocodingax.ai</li>
-                <li>환불 처리 기간: 요청일로부터 영업일 기준 3~5일</li>
-              </ul>
-              <p className="text-xs text-gray-400 mt-2">
-                본 서비스는 전자상거래법 제17조에 따른 디지털 콘텐츠로, 서비스 제공이 시작된 이후에는 청약철회가 제한될 수 있습니다.
-              </p>
+              <p>본 서비스는 전자상거래법 제17조에 따른 디지털 콘텐츠로, 결제 완료 시점부터 서비스 제공이 시작되므로 청약철회(환불)가 불가합니다.</p>
             </div>
           </div>
         </section>
