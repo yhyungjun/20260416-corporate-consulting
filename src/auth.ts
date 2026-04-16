@@ -2,21 +2,22 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [
-    Google({
-      authorization: {
-        params: {
-          hd: "jocodingax.ai",
-        },
-      },
-    }),
-  ],
+  providers: [Google],
   callbacks: {
-    async signIn({ profile }) {
-      return profile?.email?.endsWith("@jocodingax.ai") ?? false;
+    async jwt({ token, profile }) {
+      if (profile?.email) {
+        token.role = profile.email.endsWith("@jocodingax.ai") ? "admin" : "user";
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as { role?: string }).role = token.role as string;
+      }
+      return session;
     },
   },
   pages: {
-    signIn: "/admin/login",
+    signIn: "/login",
   },
 })

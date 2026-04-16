@@ -7,8 +7,17 @@ export async function GET(req: Request) {
 
   try {
     if (action === 'list') {
-      const data = await listNotes();
-      const filtered = data.items.filter((n) =>
+      // 모든 노트를 페이지네이션으로 가져와서 태그 필터링
+      const allItems: Awaited<ReturnType<typeof listNotes>>['items'] = [];
+      let offset = 0;
+      const limit = 50;
+      while (true) {
+        const data = await listNotes(limit, offset);
+        allItems.push(...data.items);
+        if (data.pagination.isLast) break;
+        offset = data.pagination.nextOffset;
+      }
+      const filtered = allItems.filter((n) =>
         n.tags.some((t) => t.name.includes('사전진단컨설팅'))
       );
       const notes = filtered.map((n) => ({

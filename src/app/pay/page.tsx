@@ -257,9 +257,9 @@ export default function PayPage() {
         <div className="max-w-4xl mx-auto px-6 py-6 text-xs text-gray-500 space-y-1">
           <p className="font-medium text-gray-700">주식회사 조코딩에이엑스파트너스</p>
           <p>대표: 조동근, 문경원 | 사업자등록번호: 497-81-04077</p>
-          <p>통신판매업 신고번호: 제____-서울서초-____호</p>
+
           <p>주소: 서울특별시 서초구 서초대로 397, B동 1401호(서초동, 부띠크 모나코)</p>
-          <p>전화: ___-____-____ | 이메일: contact@jocodingax.ai</p>
+          <p>전화: 070-4280-6588 | 이메일: contact@jocodingax.ai</p>
           <div className="flex gap-3 mt-2">
             <a href="/terms" className="underline hover:text-gray-700">이용약관</a>
             <a href="/privacy" className="underline hover:text-gray-700">개인정보 처리방침</a>

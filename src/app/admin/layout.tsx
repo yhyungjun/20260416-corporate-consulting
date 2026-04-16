@@ -1,4 +1,5 @@
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
+import { signOutAction } from "@/lib/auth-actions";
 import Link from "next/link";
 
 export default async function AdminLayout({
@@ -37,12 +38,7 @@ export default async function AdminLayout({
               {session?.user && (
                 <span className="text-gray-400">{session.user.email}</span>
               )}
-              <form
-                action={async () => {
-                  "use server";
-                  await signOut({ redirectTo: "/" });
-                }}
-              >
+              <form action={signOutAction}>
                 <button
                   type="submit"
                   className="text-gray-400 hover:text-white transition-colors"

@@ -1,30 +1,29 @@
-'use client';
+import { signInWithGoogle } from "@/lib/auth-actions";
 
-import { useSearchParams } from 'next/navigation';
-
-export default function AdminLoginPage() {
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/admin';
-  const error = searchParams.get('error');
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
+}) {
+  const { callbackUrl, error } = await searchParams;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-sm w-full bg-white rounded-xl border border-gray-200 p-8 text-center">
-        <h1 className="text-xl font-bold text-gray-900 mb-2">관리자 로그인</h1>
+        <h1 className="text-xl font-bold text-gray-900 mb-2">로그인</h1>
         <p className="text-sm text-gray-500 mb-6">
-          @jocodingax.ai 계정으로 로그인하세요.
+          Google 계정으로 로그인하세요.
         </p>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error === 'AccessDenied'
-              ? '@jocodingax.ai 도메인의 Google 계정만 접근할 수 있습니다.'
-              : '로그인 중 오류가 발생했습니다.'}
+            {error === "AccessDenied"
+              ? "접근이 거부되었습니다."
+              : "로그인 중 오류가 발생했습니다."}
           </div>
         )}
 
-        <form action="/api/auth/signin/google" method="POST">
-          <input type="hidden" name="callbackUrl" value={callbackUrl} />
+        <form action={signInWithGoogle.bind(null, callbackUrl)}>
           <button
             type="submit"
             className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium"
@@ -52,7 +51,7 @@ export default function AdminLoginPage() {
         </form>
 
         <p className="text-xs text-gray-400 mt-4">
-          조코딩 AX 파트너스 관리자 전용
+          조코딩 AX 파트너스
         </p>
       </div>
     </div>
