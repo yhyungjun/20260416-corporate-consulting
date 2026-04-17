@@ -10,8 +10,8 @@ const notoSansKR = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: '조코딩 AX 파트너스 - 리포트 생성기',
-  description: '미팅 노트에서 자동으로 AX 사전 기업 진단 리포트를 생성합니다.',
+  title: '사전 기업 진단 컨설팅 - 조코딩AX파트너스',
+  description: 'AI가 기업의 디지털 전환 준비도를 진단하고, 맞춤형 AX(AI Transformation) 전략을 제안합니다.',
 };
 
 export default function RootLayout({
