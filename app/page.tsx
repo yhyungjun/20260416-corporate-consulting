@@ -70,7 +70,7 @@ export default async function LandingPage() {
               {
                 step: '04',
                 title: '리포트 전달',
-                desc: 'AI 기반 15페이지 진단 리포트를 이메일로 받습니다.',
+                desc: 'AI 기반 8페이지 진단 리포트를 이메일로 받습니다.',
               },
             ].map((item) => (
               <div key={item.step} className="text-center">

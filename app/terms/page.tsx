@@ -15,7 +15,7 @@ export default function TermsPage() {
             <p>회사는 다음의 서비스를 제공합니다.</p>
             <ul className="list-disc list-inside space-y-1">
               <li>AI 기반 사전 기업 진단 설문 분석</li>
-              <li>AI 기업 진단 리포트 (15페이지) 제작 및 전달</li>
+              <li>AI 기업 진단 리포트 (8페이지) 제작 및 전달</li>
               <li>컨설턴트 1:1 화상 미팅</li>
               <li>맞춤 진단 결과 이메일 전달</li>
             </ul>

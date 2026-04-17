@@ -70,7 +70,7 @@ export async function sendQuestionnaireCompleteEmail(
             <strong>컨설턴트와의 1:1 미팅 일정</strong>을 별도로 안내드리겠습니다.
           </p>
           <p style="color: #374151; margin: 0;">
-            미팅은 화상(Caret AI)으로 진행되며,<br/>
+            미팅은 화상으로 진행되며,<br/>
             미팅 완료 후 맞춤 진단 리포트가 이메일로 전달됩니다.
           </p>
         </div>

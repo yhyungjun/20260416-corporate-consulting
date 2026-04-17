@@ -12,7 +12,7 @@ const PRODUCT = {
   price: 440000,
   features: [
     '사전 진단 설문 분석',
-    'AI 기업 진단 리포트 (15페이지)',
+    'AI 기업 진단 리포트 (8페이지)',
     '컨설턴트 1:1 미팅',
     '맞춤 진단 결과 이메일 전달',
   ],
@@ -125,12 +125,11 @@ export default function PayPage() {
               <p><strong>서비스 제공 범위:</strong></p>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>사전 진단 설문 분석 (AI 성숙도 5대 영역: 전략, 데이터, 프로세스, 인재, 기술)</li>
-                <li>AI 기업 진단 리포트 15페이지 (SWOT, Gap 분석, 혁신 과제, 로드맵 포함)</li>
-                <li>컨설턴트 1:1 화상 미팅 (Caret AI)</li>
+                <li>AI 기업 진단 리포트 8페이지 (SWOT, Gap 분석, 혁신 과제, 로드맵 포함)</li>
+                <li>컨설턴트 1:1 화상 미팅</li>
                 <li>맞춤 진단 결과 이메일 전달 (PDF)</li>
               </ul>
-              <p><strong>서비스 제공 절차:</strong> 결제 완료 → 사전 설문 작성 (온라인) → 컨설턴트 1:1 미팅 → 진단 리포트 이메일 전달</p>
-              <p><strong>서비스 제공 기간:</strong> 결제일로부터 30일 이내</p>
+              <p><strong>서비스 제공 절차:</strong> 결제 완료 → 사전 설문 작성 → 컨설턴트 1:1 미팅 → 진단 리포트 이메일 전달</p>
             </div>
           </div>
 

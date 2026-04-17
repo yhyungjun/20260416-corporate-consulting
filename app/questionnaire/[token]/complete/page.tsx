@@ -18,7 +18,7 @@ export default function QuestionnaireCompletePage() {
           </div>
           <div className="flex items-start gap-2">
             <span className="text-blue-500 mt-0.5">2.</span>
-            <span>컨설턴트 1:1 화상 미팅 (Caret AI)</span>
+            <span>컨설턴트 1:1 화상 미팅</span>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-blue-500 mt-0.5">3.</span>
