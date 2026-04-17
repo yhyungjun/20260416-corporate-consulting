@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { auth } from '@/auth';
 import UserMenu from '@/components/UserMenu';
+import StartButton from '@/components/StartButton';
 
 export default async function LandingPage() {
   const session = await auth();
@@ -37,12 +38,7 @@ export default async function LandingPage() {
           AI가 기업의 디지털 전환 준비도를 진단하고,<br />
           맞춤형 AX(AI Transformation) 전략을 제안합니다.
         </p>
-        <Link
-          href="/pay"
-          className="inline-block px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-lg"
-        >
-          시작하기
-        </Link>
+        <StartButton isLoggedIn={!!user} />
       </section>
 
       {/* 진행 절차 */}
