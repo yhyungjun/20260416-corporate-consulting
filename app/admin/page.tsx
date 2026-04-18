@@ -13,6 +13,26 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Link
+          href="/admin/customers"
+          className="p-6 bg-white rounded-xl border border-gray-200 hover:border-blue-300 transition-colors"
+        >
+          <h3 className="font-semibold text-gray-900 mb-1">고객 응답 관리</h3>
+          <p className="text-sm text-gray-500">
+            결제 현황, 설문 응답, 고객 정보를 확인합니다.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/questions"
+          className="p-6 bg-white rounded-xl border border-gray-200 hover:border-blue-300 transition-colors"
+        >
+          <h3 className="font-semibold text-gray-900 mb-1">질문 관리</h3>
+          <p className="text-sm text-gray-500">
+            사전 진단 설문 질문을 확인하고 관리합니다.
+          </p>
+        </Link>
+
+        <Link
           href="/admin/report"
           className="p-6 bg-white rounded-xl border border-gray-200 hover:border-blue-300 transition-colors"
         >

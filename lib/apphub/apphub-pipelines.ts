@@ -43,6 +43,11 @@ export async function getPipelineByToken(token: string): Promise<Pipeline | null
   return results[0] || null;
 }
 
+export async function getPipelineByEmail(email: string): Promise<Pipeline | null> {
+  const results = await findRows<Pipeline>('pipelines', r => r.contact_email === email);
+  return results[0] || null;
+}
+
 export async function createPipeline(input: {
   company_name: string;
   contact_email: string;

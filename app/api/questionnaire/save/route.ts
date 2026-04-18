@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
 import { getPipelineByToken } from '@/lib/apphub/apphub-pipelines';
 import {
   getQuestionnaireByToken,
+  getQuestionnaireByUserEmail,
   createQuestionnaire,
   updateQuestionnaireAnswers,
 } from '@/lib/apphub/apphub-questionnaires';
@@ -9,7 +11,12 @@ import {
 /** 설문 자동 저장 (디바운스) */
 export async function POST(req: Request) {
   try {
-    const { token, answers } = await req.json();
+    const session = await auth();
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
+    }
+
+    const { token, userEmail, answers } = await req.json();
 
     if (!token) {
       return NextResponse.json({ error: '토큰이 필요합니다.' }, { status: 400 });
@@ -21,13 +28,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '유효하지 않은 링크입니다.' }, { status: 404 });
     }
 
-    // 기존 설문 조회 또는 새로 생성
-    let questionnaire = await getQuestionnaireByToken(token);
+    // 기존 설문 조회: email → token 순서로 시도
+    let questionnaire = await getQuestionnaireByUserEmail(session.user.email);
+    if (!questionnaire) {
+      questionnaire = await getQuestionnaireByToken(token);
+    }
+
     if (!questionnaire) {
       questionnaire = await createQuestionnaire({
         pipeline_token: token,
         company_name: pipeline.company_name,
         respondent_email: pipeline.contact_email,
+        user_email: session.user.email,
       });
     }
 

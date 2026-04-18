@@ -36,6 +36,11 @@ export async function getPaymentByOrderId(orderId: string): Promise<Payment | nu
   return results[0] || null;
 }
 
+export async function getConfirmedPaymentByEmail(email: string): Promise<Payment | null> {
+  const results = await findRows<Payment>('payments', r => r.contact_email === email && r.status === 'CONFIRMED');
+  return results[0] || null;
+}
+
 export async function createPayment(input: {
   toss_order_id: string;
   amount: number;

@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
 import { getPipelineByToken, updatePipelineStatus } from '@/lib/apphub/apphub-pipelines';
-import { getQuestionnaireByToken, submitQuestionnaire } from '@/lib/apphub/apphub-questionnaires';
+import { getQuestionnaireByToken, getQuestionnaireByUserEmail, submitQuestionnaire } from '@/lib/apphub/apphub-questionnaires';
 import { sendQuestionnaireCompleteEmail } from '@/lib/email';
 import { notifyQuestionnaireComplete } from '@/lib/slack';
 
 /** 설문 최종 제출 */
 export async function POST(req: Request) {
   try {
+    const session = await auth();
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
+    }
+
     const { token } = await req.json();
 
     if (!token) {
@@ -18,7 +24,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '유효하지 않은 링크입니다.' }, { status: 404 });
     }
 
-    const questionnaire = await getQuestionnaireByToken(token);
+    // email → token 순서로 설문 조회
+    let questionnaire = await getQuestionnaireByUserEmail(session.user.email);
+    if (!questionnaire) {
+      questionnaire = await getQuestionnaireByToken(token);
+    }
     if (!questionnaire) {
       return NextResponse.json({ error: '설문 데이터를 찾을 수 없습니다.' }, { status: 404 });
     }

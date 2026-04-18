@@ -21,16 +21,22 @@ export default async function AdminLayout({
               </Link>
               <div className="flex gap-4 text-sm">
                 <Link
+                  href="/admin/customers"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  고객 관리
+                </Link>
+                <Link
+                  href="/admin/questions"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  질문 관리
+                </Link>
+                <Link
                   href="/admin/report"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   리포트 생성
-                </Link>
-                <Link
-                  href="/admin/pipeline"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  파이프라인
                 </Link>
               </div>
             </div>

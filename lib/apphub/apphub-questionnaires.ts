@@ -6,6 +6,7 @@ export interface Questionnaire {
   company_name: string;
   respondent_name: string | null;
   respondent_email: string | null;
+  user_email: string | null;
   answers: Record<string, string>;
   status: 'IN_PROGRESS' | 'SUBMITTED';
   submitted_at: string | null;
@@ -22,11 +23,17 @@ export async function getQuestionnaireByToken(token: string): Promise<Questionna
   return results[0] || null;
 }
 
+export async function getQuestionnaireByUserEmail(email: string): Promise<Questionnaire | null> {
+  const results = await findRows<Questionnaire>('questionnaires', r => r.user_email === email);
+  return results[0] || null;
+}
+
 export async function createQuestionnaire(input: {
   pipeline_token: string;
   company_name: string;
   respondent_name?: string;
   respondent_email?: string;
+  user_email?: string;
 }): Promise<Questionnaire> {
   return createRow<Questionnaire>('questionnaires', {
     ...input,

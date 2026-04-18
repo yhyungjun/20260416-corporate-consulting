@@ -72,9 +72,9 @@ function SuccessContent() {
       <h1 className="text-xl font-bold text-gray-900 mb-2">결제가 완료되었습니다</h1>
       <p className="text-gray-500 mb-4">사전 진단 설문지 작성 안내를 이메일로 보내드렸습니다.</p>
 
-      {orderInfo?.questionnaireToken && (
+      {orderInfo && (
         <a
-          href={`/questionnaire/${orderInfo.questionnaireToken}`}
+          href="/questionnaire"
           className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors mb-6"
         >
           지금 바로 설문 작성하기

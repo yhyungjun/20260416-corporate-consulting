@@ -12,7 +12,7 @@ export async function sendPaymentConfirmEmail(
   companyName: string,
   questionnaireToken: string,
 ) {
-  const questionnaireUrl = `${BASE_URL}/questionnaire/${questionnaireToken}`;
+  const questionnaireUrl = `${BASE_URL}/questionnaire`;
 
   await getResend().emails.send({
     from: EMAIL_FROM,
@@ -30,6 +30,7 @@ export async function sendPaymentConfirmEmail(
           </p>
           <p style="color: #374151; margin: 0 0 16px 0;">
             아래 링크를 클릭하여 <strong>사전 진단 설문</strong>을 작성해 주세요.<br/>
+            결제 시 사용한 Google 계정으로 로그인 후 설문을 작성할 수 있습니다.<br/>
             설문 완료 후 컨설턴트와의 1:1 미팅이 진행됩니다.
           </p>
           <a href="${questionnaireUrl}" style="display: inline-block; background: #2563eb; color: #ffffff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">
