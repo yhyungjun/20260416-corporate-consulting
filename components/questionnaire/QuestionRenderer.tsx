@@ -6,9 +6,10 @@ interface Props {
   question: SurveyQuestion;
   value: string;
   onChange: (questionId: string, value: string) => void;
+  readOnly?: boolean;
 }
 
-export default function QuestionRenderer({ question, value, onChange }: Props) {
+export default function QuestionRenderer({ question, value, onChange, readOnly }: Props) {
   const { id, questionText, answerType, options } = question;
 
   return (
@@ -16,6 +17,7 @@ export default function QuestionRenderer({ question, value, onChange }: Props) {
       <label className="block text-sm font-medium text-gray-800 mb-2">
         <span className="text-gray-400 mr-1.5">{id}.</span>
         {questionText}
+        {question.required && <span className="text-red-500 ml-1">*</span>}
       </label>
 
       {answerType === 'text' && (
@@ -24,7 +26,8 @@ export default function QuestionRenderer({ question, value, onChange }: Props) {
             value={value}
             onChange={(e) => onChange(id, e.target.value)}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+            disabled={readOnly}
             placeholder="답변을 입력해주세요"
           />
         ) : (
@@ -32,7 +35,8 @@ export default function QuestionRenderer({ question, value, onChange }: Props) {
             type="text"
             value={value}
             onChange={(e) => onChange(id, e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            disabled={readOnly}
             placeholder="답변을 입력해주세요"
           />
         )
@@ -44,6 +48,7 @@ export default function QuestionRenderer({ question, value, onChange }: Props) {
           value={value}
           onChange={(e) => onChange(id, e.target.value)}
           className="w-40 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+          disabled={readOnly}
           placeholder="숫자 입력"
         />
       )}
@@ -63,9 +68,10 @@ export default function QuestionRenderer({ question, value, onChange }: Props) {
                 value={opt}
                 checked={value === opt}
                 onChange={() => onChange(id, opt)}
+                disabled={readOnly}
                 className="mt-0.5 accent-blue-600"
               />
-              <span className="text-sm text-gray-700">{opt}</span>
+              <span className="text-sm text-gray-900">{opt}</span>
             </label>
           ))}
         </div>
@@ -92,9 +98,10 @@ export default function QuestionRenderer({ question, value, onChange }: Props) {
                       : [...selected, opt];
                     onChange(id, next.join(';;'));
                   }}
+                  disabled={readOnly}
                   className="mt-0.5 accent-blue-600"
                 />
-                <span className="text-sm text-gray-700">{opt}</span>
+                <span className="text-sm text-gray-900">{opt}</span>
               </label>
             );
           })}
@@ -119,9 +126,10 @@ export default function QuestionRenderer({ question, value, onChange }: Props) {
                     onChange(id, JSON.stringify(next));
                   }}
                   className="w-16 px-2 py-1.5 border border-gray-300 rounded-lg text-sm text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  disabled={readOnly}
                   placeholder="#"
                 />
-                <span className="text-sm text-gray-700">{opt}</span>
+                <span className="text-sm text-gray-900">{opt}</span>
               </div>
             );
           })}

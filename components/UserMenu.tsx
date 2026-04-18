@@ -77,12 +77,20 @@ export default function UserMenu({ user }: Props) {
             )}
           </div>
           {user.role === 'admin' && (
-            <a
-              href="/admin"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-            >
-              관리자 대시보드
-            </a>
+            <>
+              <a
+                href="/questionnaire"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                사전 질문
+              </a>
+              <a
+                href="/admin"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                관리자 대시보드
+              </a>
+            </>
           )}
           <SignOutButton />
         </div>

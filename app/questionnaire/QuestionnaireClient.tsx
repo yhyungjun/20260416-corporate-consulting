@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { SURVEY_QUESTIONS, QUESTION_PAGES } from '@/lib/questionnaire/question-guide';
 import QuestionRenderer from '@/components/questionnaire/QuestionRenderer';
 import ProgressBar from '@/components/questionnaire/ProgressBar';
+import UserMenu from '@/components/UserMenu';
 
 const EXEC_PARTS = new Set(QUESTION_PAGES.flatMap((p) => p.parts));
 const EXEC_QUESTIONS = SURVEY_QUESTIONS.filter((q) => EXEC_PARTS.has(q.part));
@@ -23,9 +24,16 @@ interface Props {
   userEmail: string;
   initialAnswers: Record<string, string>;
   questionnaireId?: string;
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    role?: string;
+  } | null;
+  readOnly?: boolean;
 }
 
-export default function QuestionnaireClient({ pipelineToken, userEmail, initialAnswers }: Props) {
+export default function QuestionnaireClient({ pipelineToken, userEmail, initialAnswers, user, readOnly }: Props) {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers);
@@ -53,6 +61,7 @@ export default function QuestionnaireClient({ pipelineToken, userEmail, initialA
 
   const handleChange = useCallback(
     (questionId: string, value: string) => {
+      if (readOnly) return;
       setAnswers((prev) => {
         const next = { ...prev, [questionId]: value };
         autoSave(next);
@@ -77,6 +86,21 @@ export default function QuestionnaireClient({ pipelineToken, userEmail, initialA
   };
 
   const handleSubmit = async () => {
+    // 필수 항목 검증
+    const requiredQuestions = EXEC_QUESTIONS.filter((q) => q.required);
+    const unanswered = requiredQuestions.filter((q) => !answers[q.id]?.trim());
+    if (unanswered.length > 0) {
+      const firstUnanswered = unanswered[0];
+      // 해당 페이지로 이동
+      const targetPage = QUESTION_PAGES.find((p) => p.parts.includes(firstUnanswered.part));
+      if (targetPage && targetPage.page !== currentPage) {
+        setCurrentPage(targetPage.page);
+        window.scrollTo(0, 0);
+      }
+      setError(`필수 항목을 모두 작성해주세요. (미작성: ${unanswered.map((q) => q.id).join(', ')})`);
+      return;
+    }
+
     setSubmitting(true);
     setError('');
     try {
@@ -112,18 +136,28 @@ export default function QuestionnaireClient({ pipelineToken, userEmail, initialA
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-6 py-4">
-          <Link href="/">
-            <Image src="/images/logo.png" alt="조코딩 AX 파트너스" width={160} height={40} className="h-8 w-auto" />
-          </Link>
-          <h1 className="text-lg font-bold text-gray-900 mt-2">사전 기업 진단 설문</h1>
+        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div>
+            <Link href="/">
+              <Image src="/images/logo.png" alt="조코딩 AX 파트너스" width={160} height={40} className="h-8 w-auto" />
+            </Link>
+            <h1 className="text-lg font-bold text-gray-900 mt-2">사전 기업 진단 설문</h1>
+          </div>
+          <UserMenu user={user || null} />
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-8">
+        {readOnly && (
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-center gap-2">
+            <span className="text-green-500 text-lg">&#10003;</span>
+            설문이 제출 완료되었습니다. 응답 내용을 확인할 수 있지만, 수정은 불가합니다.
+          </div>
+        )}
+
         <ProgressBar currentPage={currentPage} />
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className={`bg-white rounded-xl border border-gray-200 p-6 ${readOnly ? 'opacity-80' : ''}`}>
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-gray-900">{pageInfo.label}</h2>
             <p className="text-sm text-gray-500 mt-1">{pageInfo.desc}</p>
@@ -135,6 +169,7 @@ export default function QuestionnaireClient({ pipelineToken, userEmail, initialA
               question={q}
               value={answers[q.id] || ''}
               onChange={handleChange}
+              readOnly={readOnly}
             />
           ))}
         </div>
@@ -154,7 +189,16 @@ export default function QuestionnaireClient({ pipelineToken, userEmail, initialA
             이전
           </button>
 
-          {isLastPage ? (
+          {readOnly ? (
+            isLastPage ? null : (
+              <button
+                onClick={handleNext}
+                className="px-5 py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
+              >
+                다음
+              </button>
+            )
+          ) : isLastPage ? (
             <button
               onClick={handleSubmit}
               disabled={submitting}
@@ -173,7 +217,9 @@ export default function QuestionnaireClient({ pipelineToken, userEmail, initialA
         </div>
 
         <p className="text-xs text-gray-400 text-center mt-4">
-          답변은 자동으로 저장됩니다. 나중에 다시 로그인하여 이어서 작성할 수 있습니다.
+          {readOnly
+            ? '제출 완료된 설문입니다. 내용 확인만 가능합니다.'
+            : '답변은 자동으로 저장됩니다. 나중에 다시 로그인하여 이어서 작성할 수 있습니다.'}
         </p>
       </main>
     </div>
