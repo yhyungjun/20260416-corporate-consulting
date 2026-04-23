@@ -8,8 +8,8 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { SURVEY_QUESTIONS, QUESTION_PAGES } from '@/lib/questionnaire/question-guide';
-import PageHeader from '@/admin/components/PageHeader';
-import StatusBadge from '@/admin/components/StatusBadge';
+import PageHeader from '@admin/PageHeader';
+import StatusBadge from '@admin/StatusBadge';
 
 // 목업 — 현재는 기본 설문 1종. Phase 3(F4 CRUD)에서 AppHub로 외부화 예정.
 const QUESTIONNAIRES = [

@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { ExternalLink, Calendar } from 'lucide-react';
-import PageHeader from '@/admin/components/PageHeader';
-import StatusBadge, { type StatusVariant } from '@/admin/components/StatusBadge';
-import DataTable, { type Column } from '@/admin/components/DataTable';
+import PageHeader from '@admin/PageHeader';
+import StatusBadge, { type StatusVariant } from '@admin/StatusBadge';
+import DataTable, { type Column } from '@admin/DataTable';
 
 // 목업 — Phase 2에서 AppHub pipelines(FORM_COMPLETE ~ MEETING_COMPLETE) 필터로 교체
 interface PreMeetingRow {

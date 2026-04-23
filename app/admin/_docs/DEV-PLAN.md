@@ -11,7 +11,7 @@
 ## Claude Code 하네스 (최소 구성, 유지)
 
 ### 자동 로드
-- 프로젝트 루트 [CLAUDE.md](../../CLAUDE.md) — 매 세션
+- 프로젝트 루트 [CLAUDE.md](../../../CLAUDE.md) — 매 세션
 - `app/admin/**` 또는 `admin/**` 작업 시 경로 컨텍스트로 [admin/docs/CLAUDE.md](CLAUDE.md) 참조
 
 ### 필요 시 Read

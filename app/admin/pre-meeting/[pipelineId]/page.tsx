@@ -7,7 +7,7 @@ import {
   BookOpen,
   Target,
 } from 'lucide-react';
-import PageHeader from '@/admin/components/PageHeader';
+import PageHeader from '@admin/PageHeader';
 
 export default async function PreMeetingDetailPage({
   params,

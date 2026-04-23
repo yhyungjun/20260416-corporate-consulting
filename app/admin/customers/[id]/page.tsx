@@ -4,8 +4,8 @@ import { getPipeline } from '@/lib/apphub/apphub-pipelines';
 import { listPayments } from '@/lib/apphub/apphub-payments';
 import { getQuestionnaireByToken } from '@/lib/apphub/apphub-questionnaires';
 import { SURVEY_QUESTIONS, QUESTION_PAGES } from '@/lib/questionnaire/question-guide';
-import PageHeader from '@/admin/components/PageHeader';
-import StatusBadge, { type StatusVariant } from '@/admin/components/StatusBadge';
+import PageHeader from '@admin/PageHeader';
+import StatusBadge, { type StatusVariant } from '@admin/StatusBadge';
 
 const PIPELINE_STAGES = [
   'PAYMENT_COMPLETE',

@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@admin/*": ["./app/admin/_components/*"]
     }
   },
   "include": [

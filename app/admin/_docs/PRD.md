@@ -11,7 +11,7 @@
 
 ## 접근 권한
 Google OAuth + `@jocodingax.ai` 도메인 한정 → `admin` 역할.
-([auth.ts](../../auth.ts), [middleware.ts](../../middleware.ts) 이미 구현 완료)
+([auth.ts](../../../auth.ts), [middleware.ts](../../../middleware.ts) 이미 구현 완료)
 
 ---
 

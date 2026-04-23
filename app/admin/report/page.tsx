@@ -1,5 +1,5 @@
 import { FileText, AlertCircle } from 'lucide-react';
-import PageHeader from '@/admin/components/PageHeader';
+import PageHeader from '@admin/PageHeader';
 
 export default function ReportGeneratorPlaceholder() {
   return (

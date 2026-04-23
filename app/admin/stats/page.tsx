@@ -5,8 +5,8 @@ import {
   CalendarDays,
   FileCheck2,
 } from 'lucide-react';
-import PageHeader from '@/admin/components/PageHeader';
-import StatCard from '@/admin/components/StatCard';
+import PageHeader from '@admin/PageHeader';
+import StatCard from '@admin/StatCard';
 
 // 목업 — Phase 2에서 AppHub 실데이터 집계로 교체
 const FUNNEL_STAGES = [

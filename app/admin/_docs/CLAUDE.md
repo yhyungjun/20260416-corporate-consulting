@@ -1,6 +1,6 @@
 # Admin 범위 작업 컨텍스트
 
-루트 [CLAUDE.md](../../CLAUDE.md)의 연장. `app/admin/**` 또는 `admin/**` 수정 시 이 문서 참조.
+루트 [CLAUDE.md](../../../CLAUDE.md)의 연장. `app/admin/**` 수정 시 이 문서 참조.
 
 ## Admin 기능 범위 (PRD 요약)
 | ID | 기능 | 상태 | 경로 |
@@ -52,7 +52,7 @@ PDF 다운로드 → /api/report/pdf
 - **AppHub reports 테이블 ID**: `36` (apphub-tables.ts 내 `TABLE_IDS.reports`)
 - **Claude tool 이름**: `extract_report_data` (claude-prompt.ts)
 - **Report 필드 개수**: 25+ (scores 5개, SWOT 4개, KPI 7개, painPoints 등 배열)
-- 상세 스키마: [lib/questionnaire/report-schema.ts](../../lib/questionnaire/report-schema.ts) (`ReportFields`, `DerivedMetrics`, `FIELD_GROUPS`)
+- 상세 스키마: [lib/questionnaire/report-schema.ts](../../../lib/questionnaire/report-schema.ts) (`ReportFields`, `DerivedMetrics`, `FIELD_GROUPS`)
 
 ## 리뷰 페이지 UX 규칙
 - `metadata.lowConfidenceFields`에 포함된 필드 → 주황색 표시 (Haiku로 보충된 추정값)

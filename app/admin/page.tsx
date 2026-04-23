@@ -8,9 +8,9 @@ import {
   AlertTriangle,
   Activity,
 } from 'lucide-react';
-import PageHeader from '@/admin/components/PageHeader';
-import StatCard from '@/admin/components/StatCard';
-import StatusBadge, { type StatusVariant } from '@/admin/components/StatusBadge';
+import PageHeader from '@admin/PageHeader';
+import StatCard from '@admin/StatCard';
+import StatusBadge, { type StatusVariant } from '@admin/StatusBadge';
 
 // 목업 데이터 — Phase 2에서 AppHub 실호출로 교체
 const STATS = {

@@ -3,9 +3,9 @@ import { ExternalLink } from 'lucide-react';
 import { listPipelines } from '@/lib/apphub/apphub-pipelines';
 import { listPayments } from '@/lib/apphub/apphub-payments';
 import { listQuestionnaires } from '@/lib/apphub/apphub-questionnaires';
-import PageHeader from '@/admin/components/PageHeader';
-import DataTable, { type Column } from '@/admin/components/DataTable';
-import StatusBadge, { type StatusVariant } from '@/admin/components/StatusBadge';
+import PageHeader from '@admin/PageHeader';
+import DataTable, { type Column } from '@admin/DataTable';
+import StatusBadge, { type StatusVariant } from '@admin/StatusBadge';
 
 interface CustomerRow {
   pipelineId: string;

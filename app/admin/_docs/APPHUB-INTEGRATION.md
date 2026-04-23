@@ -12,11 +12,11 @@
 | 테이블명 | ID | 용도 | 스키마 정의 파일 |
 |---|---|---|---|
 | `reports` | `36` | 생성된 리포트 (ReportFields JSON) | `admin/lib/report-db.ts` (이식 후) |
-| `payments` | `40` | 결제 내역 | [lib/apphub/apphub-payments.ts](../../lib/apphub/apphub-payments.ts) |
-| `pipelines` | `41` | 고객 상태머신 | [lib/apphub/apphub-pipelines.ts](../../lib/apphub/apphub-pipelines.ts) |
-| `questionnaires` | `42` | 설문 응답 | [lib/apphub/apphub-questionnaires.ts](../../lib/apphub/apphub-questionnaires.ts) |
+| `payments` | `40` | 결제 내역 | [lib/apphub/apphub-payments.ts](../../../lib/apphub/apphub-payments.ts) |
+| `pipelines` | `41` | 고객 상태머신 | [lib/apphub/apphub-pipelines.ts](../../../lib/apphub/apphub-pipelines.ts) |
+| `questionnaires` | `42` | 설문 응답 | [lib/apphub/apphub-questionnaires.ts](../../../lib/apphub/apphub-questionnaires.ts) |
 
-소스: [lib/apphub/apphub-tables.ts](../../lib/apphub/apphub-tables.ts) 상수 `TABLE_IDS`.
+소스: [lib/apphub/apphub-tables.ts](../../../lib/apphub/apphub-tables.ts) 상수 `TABLE_IDS`.
 
 ## API 엔드포인트 패턴
 ```
@@ -57,7 +57,7 @@ PAYMENT_COMPLETE
   → REPORT_DELIVERED        (고객 이메일 전달)
 ```
 
-소스: [lib/apphub/apphub-pipelines.ts](../../lib/apphub/apphub-pipelines.ts) `PipelineStatus` 타입.
+소스: [lib/apphub/apphub-pipelines.ts](../../../lib/apphub/apphub-pipelines.ts) `PipelineStatus` 타입.
 
 ## `pipelines` 행 스키마
 ```typescript
@@ -104,5 +104,5 @@ AppHub은 MCP HTTP 서버로도 노출됨: `https://hub-api.jocodingax.ai/mcp`.
 - **⚠️ `.mcp.json`에 API Key 평문 기입 금지** — `claude/musing-lichterman` 브랜치에서 실수로 커밋된 전례 있음. 키 로테이션 필요
 
 ## Slack / Email 알림 연계
-- 리포트 생성 완료 → `pipelines.slack_message_ts`에 Slack 메시지 ts 저장 → [lib/slack.ts](../../lib/slack.ts)
-- 고객 이메일 전달 → `pipelines.email_sent_at` 타임스탬프 → [lib/email.ts](../../lib/email.ts) (Resend)
+- 리포트 생성 완료 → `pipelines.slack_message_ts`에 Slack 메시지 ts 저장 → [lib/slack.ts](../../../lib/slack.ts)
+- 고객 이메일 전달 → `pipelines.email_sent_at` 타임스탬프 → [lib/email.ts](../../../lib/email.ts) (Resend)

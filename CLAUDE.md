@@ -15,12 +15,14 @@
 | 영역 | 경로 | 담당 | 규칙 |
 |---|---|---|---|
 | 유저 페이지 | `app/{login,pay,questionnaire,privacy,terms,page.tsx}`, 관련 `components/`, `lib/{email,slack,toss-payments}` | **파트너** | **수정 금지** (결제 PG 승인 대기 중, 명시적 요청 없으면 건드리지 않음) |
-| 어드민 | `app/admin/**/*.tsx`, `admin/**/*` | 사용자 + Claude | 신규 기능은 여기 |
+| 어드민 | `app/admin/**/*` (라우트 + 컴포넌트 + 문서 모두 이 아래) | 사용자 + Claude | 신규 기능은 여기 |
 
-## `admin/` 대폴더 규칙
-- **라우트**는 Next.js 규약상 `app/admin/**/*.tsx`에 둠
-- **그 외 어드민 자산**(lib, components, context, docs, samples) 전부 **`admin/` 루트 폴더**
-- 유저페이지 파일과 경로가 겹치지 않게 분리 → 파트너와 git 병렬 작업 충돌 최소화
+## `app/admin/` 폴더 규칙
+- **라우트**: `app/admin/{customers,pre-meeting,questionnaires,report,stats}/**/*.tsx` + `app/admin/layout.tsx`, `app/admin/page.tsx`
+- **컴포넌트**: `app/admin/_components/` — Next.js private folder(`_` 접두사)로 URL 라우트에서 제외
+- **문서**: `app/admin/_docs/` — PRD, DEV-PLAN, CLAUDE(admin), APPHUB-INTEGRATION, AGENTS, generator-design
+- **Import**: `@admin/ComponentName` alias 사용 ([tsconfig.json](tsconfig.json) paths 정의). 예: `import PageHeader from '@admin/PageHeader'`
+- **사유**: AppHub 배포가 `app/` 트리 기준이라 어드민 자산 전체를 `app/admin/` 하위로 통합 (2026-04-23)
 
 ## 금지사항
 - 기존 파일 수정 전 **사용자 컨펌 필수**
@@ -35,8 +37,9 @@
 | AppHub 제네릭 CRUD | [lib/apphub/apphub-tables.ts](lib/apphub/apphub-tables.ts) (TABLE_IDS 포함) |
 | 파이프라인 상태머신 | [lib/apphub/apphub-pipelines.ts](lib/apphub/apphub-pipelines.ts) |
 | 설문 스키마 | [lib/questionnaire/question-guide.ts](lib/questionnaire/question-guide.ts), [lib/questionnaire/report-schema.ts](lib/questionnaire/report-schema.ts) |
-| 리포트 생성기 (이식 중) | `admin/{lib,components,context}/`, `app/admin/report/*`, `app/api/report/*` |
-| 어드민 전용 문서 | [admin/docs/](admin/docs/) — PRD, DEV-PLAN, CLAUDE(admin), APPHUB-INTEGRATION |
+| 어드민 공통 컴포넌트 | [app/admin/_components/](app/admin/_components/) — AdminShell, Sidebar, PageHeader, StatCard, StatusBadge, DataTable, EmptyState |
+| 리포트 생성기 (이식 중) | `app/admin/_components/` (UI), `app/admin/report/*`, `app/api/report/*` |
+| 어드민 전용 문서 | [app/admin/_docs/](app/admin/_docs/) — PRD, DEV-PLAN, CLAUDE(admin), APPHUB-INTEGRATION |
 
 ## 작업 원칙
 1. 큰 작업 전에 **플랜 제시 → 사용자 OK → 실행**
